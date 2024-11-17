@@ -149,45 +149,70 @@
                 @endif
 
                 @if (auth()->user()->role_id == 2)
-                    {{-- <li class="nav-item">
-                        <a href="/backoffice/service"
-                            class="nav-link {{ request()->is('backoffice/service', 'backoffice/service/*') ? 'active' : '' }}">
+                    <li class="nav-item">
+                        <a href="/backoffice/absen/create"
+                            class="nav-link {{ request()->is('backoffice/absen/create') ? 'active' : '' }}">
                             <i class="nav-icon fa fa-file-signature"></i>
                             <p>
-                                Layanan
+                                Absen
                             </p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/backoffice/portfolio"
-                            class="nav-link {{ request()->is('backoffice/portfolio', 'backoffice/portfolio/*') ? 'active' : '' }}">
+                        <a href="/backoffice/absent/self"
+                            class="nav-link {{ request()->is('backoffice/absent/self', 'backoffice/absent/*') ? 'active' : '' }}">
                             <i class="nav-icon fa fa-tasks"></i>
                             <p>
-                                Proyek
+                                Absensi Saya
                             </p>
                         </a>
-                    </li> --}}
-                    <li class="nav-item has-treeview {{ request()->is('backoffice/absensi-data/*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->is('backoffice/absensi-data/*') ? 'active' : '' }}">
+                    </li>
+                    <li class="nav-item has-treeview {{ request()->is('backoffice/submission-absent/*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->is('backoffice/submission-absent/*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-newspaper"></i>
                             <p>
-                                Data Absensi
+                                Pengajuan Absensi
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="/backoffice/absensi-data/qrcode"
-                                    class="nav-link {{ request()->is('backoffice/absensi-data/qrcode', 'backoffice/absensi-data/qrcode/*') ? 'active' : '' }}">
+                                <a href="/backoffice/submission-absent/cuti"
+                                    class="nav-link {{ request()->is('backoffice/submission-absent/cuti', 'backoffice/submission-absent/cuti/*') ? 'active' : '' }}">
                                     <i class="fa fa-circle fa-regular nav-icon"></i>
-                                    <p>Qr Code</p>
+                                    <p>Cuti</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="/backoffice/absensi-data/absensi"
-                                    class="nav-link {{ request()->is('backoffice/absensi-data/absensi', 'backoffice/absensi-data/absensi/*') ? 'active' : '' }}">
+                                <a href="/backoffice/submission-absent/izin-sakit"
+                                    class="nav-link {{ request()->is('backoffice/submission-absent/izin-sakit', 'backoffice/submission-absent/izin-sakit/*') ? 'active' : '' }}">
                                     <i class="fa fa-circle fa-regular nav-icon"></i>
-                                    <p>Absensi</p>
+                                    <p>Izin / Sakit</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item has-treeview {{ request()->is('backoffice/task/*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->is('backoffice/task/*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-newspaper"></i>
+                            <p>
+                                Projek dan Tugas
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="/backoffice/task/task-project"
+                                    class="nav-link {{ request()->is('backoffice/task/task-project', 'backoffice/task/task-project/*') ? 'active' : '' }}">
+                                    <i class="fa fa-circle fa-regular nav-icon"></i>
+                                    <p>Task Project</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/backoffice/task/task-maintenance"
+                                    class="nav-link {{ request()->is('backoffice/task/task-maintenance', 'backoffice/task/task-maintenance/*') ? 'active' : '' }}">
+                                    <i class="fa fa-circle fa-regular nav-icon"></i>
+                                    <p>Task Maintenance</p>
                                 </a>
                             </li>
                         </ul>

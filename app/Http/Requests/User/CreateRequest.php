@@ -32,11 +32,13 @@ class CreateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'The name field is required.',
-            'email.required' => 'The email field is required.',
-            'role.required' => 'The role field is required.',
-            'password.required' => 'The password field is required.',
-            'password.regex' => 'The password must contain at least one uppercase letter, one lowercase letter, and one number.',
+            'name.required' => 'Nama harus diisi.',
+            'email.required' => 'Email harus diisi.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'email.email' => 'Email tidak valid.',
+            'role.required' => 'Peran harus diisi.',
+            'password.required' => 'Password harus diisi.',
+            'password.regex' => 'Password harus terdiri dari huruf kecil, huruf besar, dan angka.',
         ];
     }
 }

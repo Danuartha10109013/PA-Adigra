@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Str;
 use App\Mail\Auth\VerifyMail;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,15 @@ class UserRepository
     {
         try {
             return User::get();
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function getByAuth()
+    {
+        try {
+            return User::where('id', Auth::user()->id)->first();
         } catch (\Throwable $th) {
             throw $th;
         }

@@ -2,14 +2,14 @@
 
 namespace App\Http\Repository;
 
-use App\Models\Office;
+use App\Models\Submission;
 
-class OfficeRepository
+class SubmissionRepository
 {
     public function getAll()
     {
         try {
-            return Office::orderBy('id', 'desc')->get();
+            return Submission::orderBy('id', 'desc')->get();
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -18,7 +18,7 @@ class OfficeRepository
     public function getById($id)
     {
         try {
-            return Office::find($id);
+            return Submission::find($id);
         } catch (\Throwable $th) {
             throw $th;
         }

@@ -36,10 +36,13 @@
                 <div class="card-header">
                     <h3 class="card-title">Kantor</h3>
                     <div class="card-tools">
-
+                        <a href="/backoffice/office/add" class="btn btn-success btn-sm">
+                            <i class="fa fa-add"></i> Tambah
+                        </a>
                         <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
                             data-toggle="tooltip" title="Collapse">
-                            <i class="fas fa-minus"></i></button>
+                            <i class="fas fa-minus"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -87,6 +90,7 @@
                                 <div class="card-body">
                                     <div class="text-center">
                                         <img src="{{ asset('images/office-default.jpg') }}" class="card-img-top" style="width: 80%; height: 200px" alt="...">
+                                        <p>Lokasi</p>
                                     </div>
                                     <ul>
                                         <li>Koordinat: -6.25669089852724, 106.79641151260287</li>
@@ -107,7 +111,7 @@
                                             <i class="fa fa-edit"></i>
                                         </a> --}}
                                         <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#map" title="Detail">
+                                            data-target="#map-" title="Detail">
                                             <span><i class="fa fa-eye"></i></span>
                                         </button>
                                         <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
@@ -127,6 +131,7 @@
                                 <div class="card-body">
                                     <div class="text-center">
                                         <img src="{{ asset('images/office-default.jpg') }}" class="card-img-top" style="width: 80%; height: 200px" alt="...">
+                                        <p>Lokasi</p>
                                     </div>
                                     <ul>
                                         <li>Koordinat: -6.25669089852724, 106.79641151260287</li>

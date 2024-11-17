@@ -1,5 +1,5 @@
 <div class="modal fade" id="map-">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Lokasi Map</h4>
@@ -35,8 +35,22 @@
 
         // start marker
         var marker = L.marker([-6.239028847049527, 106.79918337392736])
-                        .bindPopup('Lokasi Kantor Cabang A')
+                        .bindPopup('Tampilan pesan disini')
                         .addTo(map);
+        
+        var iconMarker = L.icon({
+            iconUrl: 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png',
+            iconSize:     [50, 50], // size of the icon
+            iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
+            popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+        });
+
+        var marker2 = L.marker([-6.25669089852724, 106.79641151260287], {
+            icon: iconMarker,
+            draggable: false
+        })
+        .bindPopup('homebase')
+        .addTo(map);
         // end marker
 
         // start circle

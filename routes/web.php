@@ -45,12 +45,35 @@ Route::middleware(['auth'])->group(function () {
         // grup office
         Route::group(['prefix' => 'office'], function () {
             Route::get('/', [OfficeController::class, 'index']);
+            Route::post('/add', [OfficeController::class, 'add']);
             Route::post('/create', [OfficeController::class, 'create']);
 
             // grup office_id
             Route::group(['prefix' => '{office_id}'], function () {
                 Route::put('/update', [OfficeController::class, 'update']);
+                Route::put('/edit', [OfficeController::class, 'edit']);
+                Route::put('/detail', [OfficeController::class, 'detail']);
                 Route::get('/delete', [OfficeController::class, 'delete']);
+            });
+        });
+
+        // grup absen
+        Route::group(['prefix' => 'absen'], function () {
+            Route::get('/create', [AbsentController::class, 'create']);
+        });
+
+        // grup absent
+        Route::group(['prefix' => 'absent'], function () {
+            Route::get('/', [AbsentController::class, 'index']);
+            Route::get('/self', [AbsentController::class, 'self']);
+            Route::post('/store', [AbsentController::class, 'store']);
+
+            // grup absent_id
+            Route::group(['prefix' => '{absent_id}'], function () {
+                Route::get('/edit', [AbsentController::class, 'edit']);
+                Route::put('/update', [AbsentController::class, 'update']);
+                Route::get('/delete', [AbsentController::class, 'delete']);
+                Route::get('/detail', [AbsentController::class, 'detail']);
             });
         });
 
@@ -90,7 +113,7 @@ Route::middleware(['auth'])->group(function () {
 
         });
 
-        // grup absent data
+        // grup absent data ------------------------------------------------------------
         Route::group(['prefix' => 'absent-data'], function () {
 
             // grup absent
