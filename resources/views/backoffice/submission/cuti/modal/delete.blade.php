@@ -1,4 +1,4 @@
-<div class="modal fade" id="delete-{{ $position->id }}">
+<div class="modal fade" id="delete-{{ $submission->id }}">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -10,7 +10,7 @@
             <div class="modal-body">
                 <div class="card card-outline card-primary">
                     <div class="card-body">
-                        <p>Apakah anda yakin ingin menghapus {{ $position->name }}?</p>
+                        <p>Apakah anda yakin ingin menghapus Pengajuan?</p>
                     </div>
                 </div>
             </div>
@@ -18,7 +18,7 @@
                 <button type="button" class="btn btn-warning" data-dismiss="modal">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </button>
-                <a href="/backoffice/master-data/position/{{ $position->id }}/delete" class="btn btn-danger">
+                <a href="/backoffice/master-data/submission/{{ $submission->id }}/delete" class="btn btn-danger">
                     <i class="fas fa-trash"></i> Hapus
                 </a>
             </div>

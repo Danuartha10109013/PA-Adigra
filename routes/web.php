@@ -113,35 +113,33 @@ Route::middleware(['auth'])->group(function () {
 
         });
 
-        // grup absent data ------------------------------------------------------------
-        Route::group(['prefix' => 'absent-data'], function () {
+        // grup submission
+        Route::group(['prefix' => 'submission'], function () {
+            // grup cuti
+            Route::group(['prefix' => 'cuti'], function () {
+                Route::get('/', [SubmissionController::class, 'cuti']);
+                Route::post('/store', [SubmissionController::class, 'storeCuti']);
 
-            // grup absent
-            Route::group(['prefix' => 'absent'], function () {
-                Route::get('/', [AbsentController::class, 'index']);
-                Route::post('/create', [AbsentController::class, 'create']);
-
-                // grup absent_id
-                Route::group(['prefix' => '{absent_id}'], function () {
-                    Route::put('/update', [AbsentController::class, 'update']);
-                    Route::get('/delete', [AbsentController::class, 'delete']);
+                // grup cuti_id
+                Route::group(['prefix' => '{cuti_id}'], function () {
+                    Route::get('/edit', [SubmissionController::class, 'editCuti']);
+                    Route::put('/update', [SubmissionController::class, 'updateCuti']);
+                    Route::get('/delete', [SubmissionController::class, 'deleteCuti']);
                 });
-
             });
 
-            // grup submission
-            Route::group(['prefix' => 'submission'], function () {
-                Route::get('/', [SubmissionController::class, 'index']);
-                Route::post('/create', [SubmissionController::class, 'create']);
+            // grup izin-sakit
+            Route::group(['prefix' => 'izin-sakit'], function () {
+                Route::get('/', [SubmissionController::class, 'izinSakit']);
+                Route::post('/store', [SubmissionController::class, 'storeIzinSakit']);
 
-                // grup submission_id
-                Route::group(['prefix' => '{submission_id}'], function () {
-                    Route::put('/update', [SubmissionController::class, 'update']);
-                    Route::get('/delete', [SubmissionController::class, 'delete']);
+                // grup izin-sakit_id
+                Route::group(['prefix' => '{izin-sakit_id}'], function () {
+                    Route::get('/edit', [SubmissionController::class, 'editIzinSakit']);
+                    Route::put('/update', [SubmissionController::class, 'updateIzinSakit']);
+                    Route::get('/delete', [SubmissionController::class, 'deleteIzinSakit']);
                 });
-
             });
-            
         });
 
         // grup shift

@@ -117,6 +117,8 @@
                                                 @else
                                                     {{ $absentToday->end }}
                                                 @endif
+                                            @else
+                                                Belum Absen
                                             @endif
                                         </div>
                                     </div>

@@ -6,11 +6,11 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Data Pengajuan</h1>
+          <h1>Data Cuti</h1>
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item active">Data Pengajuan</li>
+            <li class="breadcrumb-item active">Data Cuti</li>
           </ol>
         </div>
       </div>
@@ -25,14 +25,14 @@
             <!-- Default box -->
             <div class="card card-outline card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">Pengajuan</h3>
+                    <h3 class="card-title">Cuti</h3>
 
                     <div class="card-tools">
-                        {{-- <a href="/backoffice/position/tambah" class="btn btn-success btn-sm" title="Tambah">
+                        {{-- <a href="/backoffice/submission/tambah" class="btn btn-success btn-sm" title="Tambah">
                             <i class="fas fa-plus"></i> Tambah
                         </a> --}}
                         <button title="Tambah" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#tambah">
-                            <span class="fa fa-plus"></span> Tambah
+                            <span class="fa fa-plus"></span> Ajukan Cuti
                         </button>
 
                         {{-- @if ($errors->any())
@@ -44,7 +44,7 @@
                         @endif --}}
 
                         {{-- Modal --}}
-                        @include('backoffice.master-data.position.modal.add')
+                        @include('backoffice.submission.cuti.modal.add')
 
                         <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
                             data-toggle="tooltip" title="Collapse">
@@ -55,7 +55,7 @@
                 <div class="card-body">
 
                     @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" position="alert">
+                    <div class="alert alert-success alert-dismissible fade show" submission="alert">
                         <strong>Berhasil </strong>{{ session('success') }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
@@ -67,38 +67,56 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Nama</th>
+                                <th>Mulai Cuti</th>
+                                <th>Selesai Cuti</th>
+                                <th>Jumlah Hari</th>
+                                <th>Alasan</th>
                                 <th>Status</th>
-                                <th>Keterangan</th>
-                                {{-- <th>Pengguna</th> --}}
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
 
-                            {{-- @foreach($positions as $key => $position)
+                            @foreach($submissions as $key => $submission)
                             <tr>
                                 <td>{{ $key+1 }}</td>
-                                <td>{{ $position->name }}</td>
-                                <td>{{ $position->users->count() }} Orang</td>
+                                <td>{{ $submission->start_date }}</td>
+                                <td>{{ $submission->end_date }}</td>
+                                <td>{{ $submission->total_day }}</td>
+                                <td>{{ $submission->description }}</td>
                                 <td>
-                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#edit-{{ $position->id }}" title="Ubah">
+                                    @if ($submission->status == "Pengajuan")
+                                        <h5>
+                                            <span class="badge badge-warning">Pengajuan</span>
+                                        </h5>
+                                    @elseif ($submission->status == "Disetujui")
+                                        <h5>
+                                            <span class="badge badge-success">Disetujui</span>
+                                        </h5>
+                                    @elseif ($submission->status == "Ditolak")
+                                        <h5>
+                                            <span class="badge badge-danger">Ditolak</span> 
+                                        </h5>
+                                    @endif
+                                </td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#edit-{{ $submission->id }}" title="Ubah">
                                         <i class="fa fa-edit"></i> Ubah
                                     </button>
-                                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-{{ $position->id }}" title="Hapus">
+                                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-{{ $submission->id }}" title="Hapus">
                                         <i class="fa fa-trash"></i> Hapus
                                     </button>
                                 </td>
                             </tr>
-                            @endforeach --}}
+                            @endforeach
                         </tbody>
                     </table>
 
                     {{-- modal --}}
-                    {{-- @foreach ($positions as $position)
-                        @include('backoffice.master-data.position.modal.edit')
-                        @include('backoffice.master-data.position.modal.delete')
-                    @endforeach --}}
+                    @foreach ($submissions as $submission)
+                        @include('backoffice.submission.cuti.modal.edit')
+                        @include('backoffice.submission.cuti.modal.delete')
+                    @endforeach
 
                 </div>
 
