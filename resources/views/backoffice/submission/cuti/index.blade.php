@@ -199,20 +199,20 @@
                             @foreach($submissions as $key => $submission)
                             <tr>
                                 <td>{{ $key+1 }}</td>
-                                @if ($submission->user_id == null)
-                                    <td>
+                                @if (auth()->user()->role_id == 1)
+                                <td>
+                                    @if ($submission->user_id == null)
                                         <h5>
                                             <span class="badge badge-danger"> <i class="fa fa-times"></i> Karyawan Resign</span>
                                         </h5>
-                                    </td>
-                                @else
-                                    <td>
+                                    @else
                                         @if (auth()->user()->role_id == 1)
                                             <button class="badge badge-light" data-toggle="modal" data-target="#detail-{{ $submission->user->id }}" title="Detail User">
                                                 <i class="fa fa-eye"></i> {{ $submission->user->name }}
                                             </button>
                                         @endif
-                                    </td>
+                                    @endif
+                                </td>
                                 @endif
                                 <td>{{ $submission->created_at }}</td>
                                 <td>{{  \Carbon\Carbon::parse($submission->start_date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</td>

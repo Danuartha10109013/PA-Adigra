@@ -186,6 +186,7 @@
                                 @if (auth()->user()->role_id == 1)
                                     <th>Karyawan</th>
                                 @endif
+                                <th>Dibuat Tanggal</th>
                                 <th>Mulai Pengajuan</th>
                                 <th>Selesai Pengajuan</th>
                                 <th>Jumlah Hari</th>
@@ -215,6 +216,7 @@
                                     @endif
                                 </td>
                                 @endif
+                                <td>{{ $submission->created_at }}</td>
                                 <td>{{  \Carbon\Carbon::parse($submission->start_date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</td>
                                 <td>{{  \Carbon\Carbon::parse($submission->end_date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</td>
                                 <td>{{ $submission->total_day }}</td>
