@@ -184,7 +184,18 @@
                         </li>
                     </ul>
                 </li>
-                @if (auth()->user()->role_id == 2)
+
+                <li class="nav-item">
+                    <a href="/backoffice/task"
+                        class="nav-link {{ request()->is('backoffice/task') ? 'active' : '' }}">
+                        <i class="nav-icon fa fa-edit"></i>
+                        <p>
+                            Task Tugas
+                        </p>
+                    </a>
+                </li>
+
+                {{-- @if (auth()->user()->role_id == 2)
                     <li class="nav-item has-treeview {{ request()->is('backoffice/task/*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->is('backoffice/task/*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-newspaper"></i>
@@ -210,7 +221,7 @@
                             </li>
                         </ul>
                     </li>
-                @endif
+                @endif --}}
 
             </ul>
         </nav>

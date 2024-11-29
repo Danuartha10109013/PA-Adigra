@@ -195,7 +195,7 @@
     
             // start marker
             var marker = L.marker([ {{ auth()->user()->office->latitude }} , {{ auth()->user()->office->longitude }} ])
-                            .bindPopup('Lokasi kantor')
+                            .bindPopup('{{ auth()->user()->office->name }}')
                             .addTo(map);
                     
             var iconMarker = L.icon({

@@ -9,6 +9,7 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,6 +75,18 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/update', [AbsentController::class, 'update']);
                 Route::get('/delete', [AbsentController::class, 'delete']);
                 Route::get('/detail', [AbsentController::class, 'detail']);
+            });
+        });
+
+        // grup task
+        Route::group(['prefix' => 'task'], function () {
+            Route::get('/', [TaskController::class, 'index']);
+            Route::post('/create', [TaskController::class, 'create']);
+
+            // grup task_id
+            Route::group(['prefix' => '{task_id}'], function () {
+                Route::put('/update', [TaskController::class, 'update']);
+                Route::get('/delete', [TaskController::class, 'delete']);
             });
         });
 
