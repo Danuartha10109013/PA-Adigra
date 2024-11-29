@@ -1,23 +1,34 @@
 <div class="modal fade" id="edit-{{ $submission->id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form role="form" method="POST" action="/backoffice/submission/cuti/{{ $submission->id }}/update" enctype="multipart/form-data">
                 {{ csrf_field() }}
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ubah Pengajuan</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">
+                        @if ($submission->status == "Ditolak")
+                            Sesuaikan pengajuan
+                        @else
+                            Ubah pengajuan
+                        @endif
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-
+                    @if ($submission->status == "Ditolak")
+                        <div class="callout callout-info">
+                            <b>Keterangan ditolak:</b> {{ $submission->status_description }}
+                        </div>
+                    @endif
                     <div class="card card-outline card-primary">
                         <div class="card-body">
+                            <input type="hidden" name="type" value="{{ $submission->type }}">
                             <div class="form-group">
                                 <label>Mulai Cuti <span class="text-danger">*</span></label>
                                 <input type="date"  name="start_date" class="form-control @if($errors->has('start_date')) is-invalid @endif" placeholder="Mulai Cuti" value="{{ $submission->start_date }}"
-                                required oninvalid="this.setCustomValidity('Mulai cuti harus diisi')" oninput="this.setCustomValidity('')" min="{{ date('Y-m-d') }}">
+                                required oninvalid="this.setCustomValidity('Mulai cuti harus diisi')" oninput="this.setCustomValidity('')" >
                                 @if($errors->has('start_date'))
                                 <small class="help-block" style="color: red">{{ $errors->first('start_date') }}</small>
                                 @endif
@@ -25,7 +36,7 @@
                             <div class="form-group">
                                 <label>Selesai Cuti <span class="text-danger">*</span></label>
                                 <input type="date"  name="end_date" class="form-control @if($errors->has('end_date')) is-invalid @endif" placeholder="Selesai Cuti" value="{{ $submission->end_date }}"
-                                required oninvalid="this.setCustomValidity('Selesai cuti harus diisi')" oninput="this.setCustomValidity('')" min="{{ date('Y-m-d') }}">
+                                required oninvalid="this.setCustomValidity('Selesai cuti harus diisi')" oninput="this.setCustomValidity('')" >
                                 @if($errors->has('end_date'))
                                 <small class="help-block" style="color: red">{{ $errors->first('end_date') }}</small>
                                 @endif
@@ -38,6 +49,12 @@
                                 <small class="help-block" style="color: red">{{ $errors->first('description') }}</small>
                                 @endif
                             </div>
+                            @if ($submission->status == "Ditolak")
+                                <div class="form-inline">
+                                    <input type="checkbox" class="" required oninvalid="this.setCustomValidity('Apakah data sudah sesuai?')" oninput="this.setCustomValidity('')">
+                                    <label class="ml-2">Cek apakah data sudah sesuai? <span class="text-danger">*</span></label>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

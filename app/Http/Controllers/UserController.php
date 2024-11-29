@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Repository\OfficeRepository;
 use App\Http\Repository\RoleRepository;
 use App\Http\Repository\UserRepository;
 use App\Http\Requests\User\CreateRequest;
@@ -12,17 +13,20 @@ class UserController extends Controller
 {
     private $userRepository;
     private $roleRepository;
+    private $officeRepository;
 
-    public function __construct(UserRepository $userRepository, RoleRepository $roleRepository)
+    public function __construct(UserRepository $userRepository, RoleRepository $roleRepository, OfficeRepository $officeRepository)
     {
         $this->userRepository = $userRepository;
         $this->roleRepository = $roleRepository;
+        $this->officeRepository = $officeRepository;
     }
 
     public function index(Request $request)
     {
         $users = $this->userRepository->customGetAll($request);
-        return view('backoffice.user-data.user.index', $users);
+        $offices = $this->officeRepository->getAll();
+        return view('backoffice.user-data.user.index', $users, compact('offices'));
     }
 
     public function create(CreateRequest $request)
@@ -104,5 +108,25 @@ class UserController extends Controller
 
         $this->userRepository->updatePassword($request, $id);
         return redirect()->back()->with('success', 'Password telah diubah');
+    }
+
+    public function updateByAdmin(Request $request, $id)
+    {
+        try {
+            $user = $this->userRepository->updateRole($request, $id);
+            return redirect()->back()->with('success', 'Data pengguna telah diubah');
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            $user = $this->userRepository->delete($id);
+            return redirect()->back()->with('success', 'Data pengguna telah dihapus');
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

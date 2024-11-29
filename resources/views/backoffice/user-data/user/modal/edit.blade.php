@@ -1,11 +1,11 @@
 <div class="modal fade" id="edit-{{ $user->id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-md">
         <div class="modal-content">
-            <form role="form" method="POST" action="/backoffice/user-data/user/{{ $user->id }}/update" enctype="multipart/form-data">
+            <form role="form" method="POST" action="/backoffice/user-data/user/{{ $user->id }}/update-by-admin" enctype="multipart/form-data">
                 {{ csrf_field() }}
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ubah Peran</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Ubah Kantor</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -14,7 +14,7 @@
 
                     <div class="card card-outline card-primary">
                         <div class="card-body">
-                            <div class="form-group">
+                            {{-- <div class="form-group">
                                 <label for="role">Peran <span class="text-danger">*</span></label>
                                 <select name="role" id="role" class="form-control {{ $errors->has('role') ? 'is-invalid' : '' }} select2">
                                     <option value="">-- Pilih --</option>
@@ -24,6 +24,18 @@
                                 </select>
                                 @if ($errors->has('role'))
                                 <small class="text-danger">{{ $errors->first('role') }}</small>
+                                @endif
+                            </div> --}}
+                            <div class="form-group">
+                                <label for="office">Kantor <span class="text-danger">*</span></label>
+                                <select name="office" id="office" class="form-control {{ $errors->has('office') ? 'is-invalid' : '' }} select2">
+                                    <option value="">-- Pilih --</option>
+                                    @foreach ($offices as $office)
+                                        <option value="{{ $office->id }}" {{ $user->office_id == $office->id ? 'selected' : '' }}>{{ $office->name }}</option>
+                                    @endforeach
+                                </select>
+                                @if ($errors->has('office'))
+                                <small class="text-danger">{{ $errors->first('office') }}</small>
                                 @endif
                             </div>
                         </div>

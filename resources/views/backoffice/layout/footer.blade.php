@@ -4,5 +4,5 @@
   <div class="float-right d-none d-sm-block">
     <b>Version</b> 3.0.4
   </div> --}}
-  <strong>Mareca Yasa Media &copy; {{ date('Y') }}</strong>
+  <strong>Absensi &copy; {{ date('Y') }}</strong>
 </footer>

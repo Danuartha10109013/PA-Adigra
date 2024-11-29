@@ -1,5 +1,5 @@
 <div class="modal fade" id="tambah" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form role="form" method="POST" action="/backoffice/submission/cuti/store" enctype="multipart/form-data">
                 {{ csrf_field() }}

@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Hapus Jabatan</h4>
+                <h4 class="modal-title">Hapus Pengajuan</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -18,7 +18,7 @@
                 <button type="button" class="btn btn-warning" data-dismiss="modal">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </button>
-                <a href="/backoffice/master-data/submission/{{ $submission->id }}/delete" class="btn btn-danger">
+                <a href="/backoffice/submission/cuti/{{ $submission->id }}/delete" class="btn btn-danger">
                     <i class="fas fa-trash"></i> Hapus
                 </a>
             </div>

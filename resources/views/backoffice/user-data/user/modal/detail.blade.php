@@ -14,7 +14,7 @@
                         <div class=" text-center">
                             <label for="foto">Foto</label>
                             @if ($user->foto)
-                                <img src="{{ Storage::disk('s3')->url($user->foto) }}" 
+                                <img src="{{ Storage::disk('local')->url($user->foto) }}" 
                                 class="gambarPreviewuser img-fluid d-block" alt=""
                                 style="width: 150px; height: 150px; margin-left: auto; margin-right: auto">
                             @else

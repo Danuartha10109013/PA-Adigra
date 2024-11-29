@@ -19,12 +19,13 @@ return new class extends Migration
             $table->foreign('office_id')->references('id')->onDelete('set null')->on('offices');
             $table->unsignedBigInteger('shift_id')->nullable();
             $table->foreign('shift_id')->references('id')->onDelete('set null')->on('shifts');
-            $table->time('start');
+            $table->time('start')->nullable();
             $table->time('end')->nullable();
             $table->string('longitude')->nullable();
             $table->string('latitude')->nullable();
             $table->string('status');
             $table->text('description')->nullable();
+            $table->date('date');
             $table->timestamps();
         });
     }

@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Absent extends Model
 {
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class, 'shift_id', 'id');

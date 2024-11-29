@@ -55,7 +55,7 @@
                                 @endif
                             </div>
                             <div class="form-group">
-                                <label for="konfirmasi_password">Password Sekarang <span class="text-danger">*</span></label>
+                                <label for="konfirmasi_password">Konfirmasi Password Sekarang <span class="text-danger">*</span></label>
                                 <input type="password"  name="konfirmasi_password" class="form-control @if ($errors->has('konfirmasi_password')) is-invalid @endif" placeholder="Konfirmasi Password" value="{{ old('konfirmasi_password') }}">
                                 @if($errors->has('konfirmasi_password'))
                                 <small class="help-block" style="color: red">{{ $errors->first('konfirmasi_password') }}</small>

@@ -2,15 +2,22 @@
 <aside class="main-sidebar sidebar-light-primary elevation-4">
     <!-- Brand Logo -->
     <a href="/backoffice/dashboard" class="brand-link">
-        <div class="d-flex ">
-            <div>
+        <img src="{{ asset('images/tekmt.png') }}"
+                alt="AdminLTE Logo"
+                class="brand-image img-circle elevation-3"
+                style="opacity: .8">
+        <span class="brand-text" style="text-transform: uppercase">
+            <b>Absensi</b>
+        </span>
+        {{-- <div class="d-flex "> --}}
+            {{-- <div>
                 <img src="{{ asset('images/absen-logo.png') }}" alt="AdminLTE Logo" class="brand-image"
                     style="opacity: .8; width: 100%">
-            </div>
+            </div> --}}
             {{-- <div class="ml-2">
                 <span class="brand-text" style="text-transform: uppercase"> <b>Absensi</b> </span>
             </div> --}}
-        </div>
+        {{-- </div> --}}
     </a>
 
     <!-- Sidebar -->
@@ -29,18 +36,18 @@
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-                <li class="nav-item">
-                    <a href="/backoffice/dashboard"
-                        class="nav-link {{ request()->is('backoffice/dashboard', 'backoffice/dashboard/*') ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-home"></i>
-                        <p>
-                            Beranda
-                        </p>
-                    </a>
-                </li>
-
+                
                 @if (auth()->user()->role_id == 1)
-
+                
+                    <li class="nav-item">
+                        <a href="/backoffice/dashboard"
+                            class="nav-link {{ request()->is('backoffice/dashboard', 'backoffice/dashboard/*') ? 'active' : '' }}">
+                            <i class="nav-icon fa fa-home"></i>
+                            <p>
+                                Beranda
+                            </p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="/backoffice/office"
                             class="nav-link {{ request()->is('backoffice/office', 'backoffice/office/*') ? 'active' : '' }}">
@@ -57,6 +64,16 @@
                             <i class="nav-icon fa fa-clock"></i>
                             <p>
                                 Shift
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/backoffice/absent"
+                            class="nav-link {{ request()->is('backoffice/absent', 'backoffice/absent/*') ? 'active' : '' }}">
+                            <i class="nav-icon fa fa-list"></i>
+                            <p>
+                                Absensi
                             </p>
                         </a>
                     </li>

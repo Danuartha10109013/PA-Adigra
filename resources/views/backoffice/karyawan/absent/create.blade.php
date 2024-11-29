@@ -6,11 +6,11 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Absen</h1>
+                <h1>Absen Hari Ini</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item active">Absen</li>
+                    <li class="breadcrumb-item active">Absen Hari Ini</li>
                 </ol>
             </div>
         </div>
@@ -22,7 +22,6 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
 
-            <!-- Default box -->
             <div class="card card-outline card-primary">
                 <div class="card-header">
                     <h3 class="card-title">Absen</h3>
@@ -46,27 +45,50 @@
                     </div>
                     @endif
 
+                    @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" absent="alert">
+                        <strong>Gagal </strong>{{ session('error') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    @endif
+
                     <div class="row">
-                        <div class="col-md-4">
+                        
+                        <div class="col-md-4 mb-3">
                             <form action="/backoffice/absent/store" method="POST">
                                 @csrf
-                                <div class="card bg-light">
+                                <div class="card card-outline card-primary bg-light">
                                     <div class="card-body">
+
+                                        <input type="hidden" id="latitude" name="latitude" class="form-control">
+                                        <input type="hidden" id="longitude" name="longitude" class="form-control">
+
                                         @if ($absentToday)
-                                            <input type="text" name="shift_id" value="Shift {{ $absentToday->shift->name }} | {{ $absentToday->shift->start }} - {{ $absentToday->shift->end }}" disabled class="form-control">
+                                            @if ($absentToday->status != 'Absen')
+                                                <select name="shift_id" class="form-control" disabled>
+                                                    <option value="">-- Tidak ada shift --</option>
+                                                </select>
+                                            @elseif ($absentToday->start)
+                                                <input type="text" name="shift_id" value="Shift {{ $absentToday->shift->name }} | {{ $absentToday->shift->start }} - {{ $absentToday->shift->end }}" disabled class="form-control">
+                                            @endif
                                         @else
-                                            <select name="shift_id" class="form-control">
+                                            <select name="shift_id" class="form-control" required id="shift"
+                                                oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Pilihan shift harus diisi')">
+                                                <option value="">-- Pilihan Shift --</option>
                                                 @foreach ($shifts as $shift)
-                                                <option value="{{ $shift->id }}">Shift {{ $shift->name }} | {{ $shift->start
-                                                    }} - {{ $shift->end }}</option>
+                                                <option value="{{ $shift->id }}">Shift {{ $shift->name }} | {{ $shift->start }} - {{ $shift->end }}</option>
                                                 @endforeach
                                             </select>
                                         @endif
                                     </div>
                                 </div>
-                                <div class="card bg-light" style="height: 475px">
+                                <div class="card card-outline card-primary bg-light" style="height: 475px">
                                     <div class="card-body">
-
+                                        <div class="text-center">
+                                            <img src="{{ asset('images/tekmt.png') }}" class="img-fluid rounded" alt="">
+                                        </div>
                                     </div>
                                 </div>
                                 @if ($absentToday)
@@ -78,6 +100,10 @@
                                         <button type="button" class="btn btn-success btn-block">
                                             <span class="fa fa-check"></span> Anda Sudah Absen
                                         </button>
+                                    @elseif ($absentToday->status != 'Absen')
+                                        <button type="button" class="btn btn-success btn-block">
+                                            <span class="fa fa-check"></span> Anda sedang {{ $absentToday->status }}
+                                        </button>
                                     @endif
                                 @else
                                     <button type="submit" class="btn btn-primary btn-block">
@@ -86,12 +112,15 @@
                                 @endif
                             </form>
                         </div>
+
                         <div class="col-md-8">
-                            <div class="card bg-light">
+                            <div class="card card-outline card-primary bg-light">
                                 <div class="card-body">
                                     <b> Hari: {{ \Carbon\Carbon::parse(date('Y-m-d'))->locale('id')->isoFormat('dddd, D
                                         MMMM YYYY') }} <br>
-                                        Koordinat Anda: -6.25669089852724, 106.79641151260287 </b>
+                                        {{-- Koordinat Anda: -6.25669089852724, 106.79641151260287  --}}
+                                        Koordinat Anda: <span id="longitudeSpan"></span>, <span id="latitudeSpan"></span>
+                                    </b>
                                 </div>
                             </div>
                             <div class="row">
@@ -100,7 +129,15 @@
                                         <div class="card-body">
                                             <h3>Absen Masuk</h3>
                                             @if ($absentToday)
-                                                {{ $absentToday->start }}
+                                                @if ($absentToday->start == null)
+                                                    @if ($absentToday->status != 'Absen')
+                                                        Anda sedang {{ $absentToday->status }}
+                                                    @else
+                                                        Belum Absen
+                                                    @endif
+                                                @else
+                                                    {{ $absentToday->start }}
+                                                @endif
                                             @else
                                                 Belum Absen
                                             @endif
@@ -113,7 +150,11 @@
                                             <h3>Absen Pulang</h3>
                                             @if ($absentToday)
                                                 @if ($absentToday->end == null)
+                                                    @if ($absentToday->status != 'Absen')
+                                                    Anda sedang {{ $absentToday->status }}
+                                                @else
                                                     Belum Absen
+                                                @endif
                                                 @else
                                                     {{ $absentToday->end }}
                                                 @endif
@@ -127,13 +168,14 @@
                                     <div class="card bg-info">
                                         <div class="card-body">
                                             <h3>Koordinat Absen</h3>
-                                            -6.239028847049527, 106.79918337392736
+                                            {{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div id="map" style="height: 400px"></div>
                         </div>
+
                     </div>
 
                 </div>
@@ -144,7 +186,16 @@
     </div>
 
     <script>
-        const map = L.map('map').setView([-6.239028847049527, 106.79918337392736], 13);
+        navigator.geolocation.getCurrentPosition(function(position) { 
+            document.getElementById('latitude').value = position.coords.latitude;
+            document.getElementById('longitude').value = position.coords.longitude;
+            document.getElementById('latitudeSpan').innerHTML = position.coords.latitude;
+            document.getElementById('longitudeSpan').innerHTML = position.coords.longitude;
+        });
+    </script>
+
+    <script>
+        const map = L.map('map').setView([{{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}], 13);
         
             const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -152,8 +203,8 @@
             }).addTo(map);
     
             // start marker
-            var marker = L.marker([-6.239028847049527, 106.79918337392736])
-                            .bindPopup('Kantor')
+            var marker = L.marker([{{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}])
+                            .bindPopup('{{ auth()->user()->office->name }}')
                             .addTo(map);
                     
             var iconMarker = L.icon({
@@ -163,24 +214,35 @@
                 popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
             });
 
-            var marker2 = L.marker([-6.25669089852724, 106.79641151260287], {
+            var marker2 = L.marker([-6.238456426443423, 106.79836960861903], {
                 icon: iconMarker,
                 draggable: false
             })
             .bindPopup('Lokasi Anda')
             .addTo(map);
+
+            // navigator.geolocation.getCurrentPosition(function(position) {
+            //     var marker3 = L.marker([position.coords.longitude, position.coords.latitude], {
+            //         icon: iconMarker,
+            //         draggable: false
+            //     })
+            //     .bindPopup('Lokasi Anda')
+            //     .addTo(map);
+            // });
+
             // end marker
 
             // start circle
-            var circle = L.circle([-6.239028847049527, 106.79918337392736], {
-                color: 'red',
+            var circle = L.circle([{{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}], {
+                color: 'red'
                 fillColor: '#f03',
                 fillOpacity: 0.5,
-                radius: 2000
+                radius: {{ auth()->user()->office->radius * 2 }}
             }).addTo(map).bindPopup('Radius Kantor');
             // end circle
-        
     </script>
+
+    
 
 </section>
 

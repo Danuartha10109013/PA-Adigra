@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('address');
-            $table->string('longitude');
-            $table->string('latitude');
-            $table->string('radius');
+            $table->decimal('longitude', 10, 7);
+            $table->decimal('latitude', 10, 7);
+            $table->integer('radius');
             $table->string('image')->nullable();
             $table->timestamps();
         });

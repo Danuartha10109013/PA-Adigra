@@ -1,4 +1,4 @@
-<div class="modal fade" id="map-">
+<div class="modal fade" id="detail-{{ $office->id }}">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">

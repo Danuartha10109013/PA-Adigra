@@ -79,6 +79,7 @@ class UserRepository
             $user->password = Hash::make($request->password); 
             $user->remember_token = Str::random(40);
             $user->role_id = $request->role;
+            $user->office_id = $request->office;
             $user->save();
 
             Mail::to($user->email)->send(new VerifyMail($user, $password));
@@ -107,7 +108,8 @@ class UserRepository
     {
         try {
             $user = User::find($id);
-            $user->role_id = $request->role;
+            // $user->role_id = $request->role;
+            $user->office_id = $request->office;
             $user->save();
         } catch (\Throwable $th) {
             throw $th;
@@ -157,6 +159,29 @@ class UserRepository
             if ($user->foto) {
                 Storage::disk('public')->delete($user->foto);
             }
+            
+            $absents = $user->absents;
+            foreach ($absents as $absent) {
+                $absent->user_id = null;
+                $absent->save();
+            }
+
+            $submissions = $user->submissions;
+            foreach ($submissions as $submission) {
+                $submission->user_id = null;
+                $submission->save();
+            }
+
+            // $absents = $user->absents;
+            // foreach ($absents as $absent) {
+            //     $absent->delete();
+            // }
+
+            // $submissions = $user->submissions;
+            // foreach ($submissions as $submission) {
+            //     $submission->delete();
+            // }
+
             $user->delete();
             return $user;
         } catch (\Throwable $th) {

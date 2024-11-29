@@ -52,7 +52,7 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => '{office_id}'], function () {
                 Route::put('/update', [OfficeController::class, 'update']);
                 Route::put('/edit', [OfficeController::class, 'edit']);
-                Route::put('/detail', [OfficeController::class, 'detail']);
+                Route::get('/detail', [OfficeController::class, 'detail']);
                 Route::get('/delete', [OfficeController::class, 'delete']);
             });
         });
@@ -101,6 +101,7 @@ Route::middleware(['auth'])->group(function () {
                 // grup user_id
                 Route::group(['prefix' => '{user_id}'], function () {
                     Route::put('/update', [UserController::class, 'update']);
+                    Route::put('/update-by-admin', [UserController::class, 'updateByAdmin']);
                     Route::get('/profile', [UserController::class, 'profile']);
                     Route::get('/edit-data', [UserController::class, 'editData']);
                     Route::get('/edit-password', [UserController::class, 'editPassword']);
@@ -125,6 +126,10 @@ Route::middleware(['auth'])->group(function () {
                     Route::get('/edit', [SubmissionController::class, 'editCuti']);
                     Route::put('/update', [SubmissionController::class, 'updateCuti']);
                     Route::get('/delete', [SubmissionController::class, 'deleteCuti']);
+                    Route::get('/confirm', [SubmissionController::class, 'confirmCuti']);
+                    Route::put('/reject', [SubmissionController::class, 'rejectCuti']);
+                    Route::put('/adjust', [SubmissionController::class, 'adjustCuti']);
+                    Route::put('/update-status-description', [SubmissionController::class, 'updateStatusDescriptionCuti']);
                 });
             });
 
@@ -134,11 +139,16 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/store', [SubmissionController::class, 'storeIzinSakit']);
 
                 // grup izin-sakit_id
-                Route::group(['prefix' => '{izin-sakit_id}'], function () {
+                Route::group(['prefix' => '{id}'], function () {
                     Route::get('/edit', [SubmissionController::class, 'editIzinSakit']);
                     Route::put('/update', [SubmissionController::class, 'updateIzinSakit']);
                     Route::get('/delete', [SubmissionController::class, 'deleteIzinSakit']);
+                    Route::get('/confirm', [SubmissionController::class, 'confirmIzinSakit']); 
+                    Route::put('/reject', [SubmissionController::class, 'rejectIzinSakit']);
+                    Route::put('/adjust', [SubmissionController::class, 'adjustIzinSakit']);
+                    Route::put('/update-status-description', [SubmissionController::class, 'updateStatusDescriptionIzinSakit']);
                 });
+
             });
         });
 

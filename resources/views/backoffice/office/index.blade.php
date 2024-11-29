@@ -36,9 +36,11 @@
                 <div class="card-header">
                     <h3 class="card-title">Kantor</h3>
                     <div class="card-tools">
-                        <a href="/backoffice/office/add" class="btn btn-success btn-sm">
+                        <button type="button" class="btn btn-success btn-sm" data-toggle="modal"
+                            data-target="#add" title="Tambah">
                             <i class="fa fa-add"></i> Tambah
-                        </a>
+                        </button>
+                        @include('backoffice.office.modal.add')
                         <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
                             data-toggle="tooltip" title="Collapse">
                             <i class="fas fa-minus"></i>
@@ -57,96 +59,64 @@
                     @endif
 
                     <div class="row">
-                        <div class="col-md-4">
-                            <div class="card card-outline card-primary">
-                                <div class="card-header text-center">
-                                    <h3 class="card-title">Kantor Cabang A</h3>
-                                    <div class="card-tools">
-                                        {{-- <a href="/backoffice/news/{{ $news->id }}/detail" class="btn btn-tool btn-sm" title="Detail">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        <a href="/backoffice/news/{{ $news->id }}/edit" class="btn btn-tool btn-sm" title="Detail">
-                                            <i class="fa fa-edit"></i>
-                                        </a> --}}
-                                        <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#map" title="Detail">
-                                            <span><i class="fa fa-eye"></i></span>
-                                        </button>
-                                        <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#delete-" title="Ubah">
-                                            <span><i class="fa fa-edit"></i></span>
-                                        </button>
-                                        <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#delete-" title="Hapus">
-                                            <span><i class="fa fa-trash"></i></span>
-                                        </button>
-                                        </button>
-                                        {{-- @include('backoffice.news.modal.delete') --}}
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                                class="fas fa-minus"></i>
-                                        </button>
+                        @foreach ($offices as $office)
+                            <div class="col-md-4">
+                                <div class="card card-outline card-primary">
+                                    <div class="card-header text-center">
+                                        <h3 class="card-title">{{ $office->name }}</h3>
+                                        <div class="card-tools">
+                                            {{-- <a href="/backoffice/news/{{ $news->id }}/detail" class="btn btn-tool btn-sm" title="Detail">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a href="/backoffice/news/{{ $news->id }}/edit" class="btn btn-tool btn-sm" title="Detail">
+                                                <i class="fa fa-edit"></i>
+                                            </a> --}}
+                                            {{-- <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
+                                                data-target="#detail-{{ $office->id }}" title="Detail">
+                                                <span><i class="fa fa-eye"></i></span>
+                                            </button> --}}
+                                            <a href="/backoffice/office/{{ $office->id }}/detail" class="btn btn-tool btn-sm">
+                                                <i class="fa fa-eye"></i> 
+                                            </a>
+                                            <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
+                                                data-target="#edit-{{ $office->id }}" title="Ubah">
+                                                <span><i class="fa fa-edit"></i></span>
+                                            </button>
+                                            <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
+                                                data-target="#delete-{{ $office->id }}" title="Hapus">
+                                                <span><i class="fa fa-trash"></i></span>
+                                            </button>
+                                            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                                                    class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <img src="{{ asset('images/office-default.jpg') }}" class="card-img-top" style="width: 80%; height: 200px" alt="...">
-                                        <p>Lokasi</p>
+                                    <div class="card-body">
+                                        <div class="text-center">
+                                            @if ($office->image)
+                                                <img src="{{ asset('storage/' . $office->image) }}" class="card-img-top" style="width: 80%; height: 200px" alt="...">
+                                            @else
+                                                <img src="{{ asset('images/office-default.jpg') }}" class="card-img-top" style="width: 80%; height: 200px" alt="...">
+                                            @endif
+                                            <p>{{ $office->address }}</p>
+                                        </div>
+                                        <ul>
+                                            <li>Koordinat: {{ $office->longitude }}, {{ $office->latitude }}</li>
+                                            <li>Radius(meter): {{ $office->radius }}</li>
+                                            {{-- <li>Koordinat: -6.25669089852724, 106.79641151260287</li>
+                                            <li>Radius(meter): 20</li> --}}
+                                        </ul>
                                     </div>
-                                    <ul>
-                                        <li>Koordinat: -6.25669089852724, 106.79641151260287</li>
-                                        <li>Radius(meter): 20</li>
-                                    </ul>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-outline card-primary">
-                                <div class="card-header text-center">
-                                    <h3 class="card-title">Kantor Cabang B</h3>
-                                    <div class="card-tools">
-                                        {{-- <a href="/backoffice/news/{{ $news->id }}/detail" class="btn btn-tool btn-sm" title="Detail">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                        <a href="/backoffice/news/{{ $news->id }}/edit" class="btn btn-tool btn-sm" title="Detail">
-                                            <i class="fa fa-edit"></i>
-                                        </a> --}}
-                                        <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#map-" title="Detail">
-                                            <span><i class="fa fa-eye"></i></span>
-                                        </button>
-                                        <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#delete-" title="Ubah">
-                                            <span><i class="fa fa-edit"></i></span>
-                                        </button>
-                                        <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                            data-target="#delete-" title="Hapus">
-                                            <span><i class="fa fa-trash"></i></span>
-                                        </button>
-                                        {{-- @include('backoffice.office.modal.map') --}}
-                                        <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                                class="fas fa-minus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <img src="{{ asset('images/office-default.jpg') }}" class="card-img-top" style="width: 80%; height: 200px" alt="...">
-                                        <p>Lokasi</p>
-                                    </div>
-                                    <ul>
-                                        <li>Koordinat: -6.25669089852724, 106.79641151260287</li>
-                                        <li>Radius(meter): 10</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
 
                     {{-- modal --}}
-                    {{-- @foreach ($offices as $office)
+                    @foreach ($offices as $office)
                         @include('backoffice.office.modal.edit')
                         @include('backoffice.office.modal.delete')
-                    @endforeach --}}
+                    @endforeach
 
                 </div>
 

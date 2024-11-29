@@ -17,7 +17,7 @@
                             <div class="form-group">
                                 <label>Nama <span class="text-danger">*</span></label>
                                 <input type="text"  name="name" class="form-control @if($errors->has('name')) is-invalid @endif" placeholder="Nama" value="{{ old('name') }}"
-                                oninvalid="this.setCustomValidity('Nama harus diisi')"
+                                required oninvalid="this.setCustomValidity('Nama harus diisi')"
                                 oninput="this.setCustomValidity('')">
                                 @if($errors->has('name'))
                                 <small class="help-block" style="color: red">{{ $errors->first('name') }}</small>
@@ -26,15 +26,17 @@
                             <div class="form-group">
                                 <label>Email <span class="text-danger">*</span></label>
                                 <input type="email"  name="email" class="form-control @if($errors->has('email')) is-invalid @endif" placeholder="Email" value="{{ old('email') }}"
-                                oninvalid="this.setCustomValidity('Email harus diisi')"
+                                required oninvalid="this.setCustomValidity('Email harus diisi')"
                                 oninput="this.setCustomValidity('')">
                                 @if($errors->has('email'))
                                 <small class="help-block" style="color: red">{{ $errors->first('email') }}</small>
                                 @endif
                             </div>
                             <div class="form-group">
+                            <div class="form-group">
                                 <label for="role">Peran <span class="text-danger">*</span></label>
-                                <select name="role" id="role" class="form-control {{ $errors->has('role') ? 'is-invalid' : '' }} select2">
+                                <select name="role" id="role" class="form-control {{ $errors->has('role') ? 'is-invalid' : '' }} select2" required
+                                oninvalid="this.setCustomValidity('Peran harus diisi')" oninput="this.setCustomValidity('')">
                                     <option value="">-- Pilih --</option>
                                     @foreach ($roles as $role)
                                         <option value="{{ $role->id }}" {{ @old('role') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
@@ -43,11 +45,24 @@
                                 @if ($errors->has('role'))
                                 <small class="text-danger">{{ $errors->first('role') }}</small>
                                 @endif
-                            </div>
+                            </div>    
+                            <div class="form-group">
+                                <label for="office">Kantor <span class="text-danger">*</span></label>
+                                <select name="office" id="office" class="form-control {{ $errors->has('office') ? 'is-invalid' : '' }} select2" required
+                                oninvalid="this.setCustomValidity('Kantor harus diisi')" oninput="this.setCustomValidity('')">
+                                    <option value="">-- Pilih --</option>
+                                    @foreach ($offices as $office)
+                                        <option value="{{ $office->id }}" {{ @old('office') == $office->id ? 'selected' : '' }}>{{ $office->name }}</option>
+                                    @endforeach
+                                </select>
+                                @if ($errors->has('office'))
+                                <small class="text-danger">{{ $errors->first('office') }}</small>
+                                @endif
+                            </div>    
                             <div class="form-group">
                                 <label>Password <span class="text-danger">*</span></label>
                                 <input type="password"  name="password" class="form-control @if ($errors->has('password')) is-invalid @endif" placeholder="Password" value="{{ old('password') }}"
-                                oninvalid="this.setCustomValidity('Password harus diisi minimal 8 karakter')"
+                                required oninvalid="this.setCustomValidity('Password harus diisi minimal 8 karakter')"
                                 oninput="this.setCustomValidity('')">
                                 @if($errors->has('password'))
                                 <small class="help-block" style="color: red">{{ $errors->first('password') }}</small>

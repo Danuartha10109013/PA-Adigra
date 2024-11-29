@@ -47,7 +47,7 @@
                                     oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Peran harus dipilih')">
                                     <option value="">-- Peran --</option>
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role->id }}">{{ $role->role }}</option>
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -113,7 +113,7 @@
                                     @if ($sRole)
                                         Peran
                                     @endif
-                                    {{ $rolee->role }}
+                                    {{ $rolee->name }}
                                 </b>
                             </div>
                             <hr>
@@ -129,17 +129,18 @@
                                 <th>Email</th>
                                 <th>Status Email</th>
                                 <th>Peran</th>
+                                <th>Kantor</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
 
-                            {{-- @foreach($users as $key => $user)
+                            @foreach($users as $key => $user)
                             <tr>
                                 <td>{{ $key+1 }}</td>
                                 <td>
                                     @if ($user->foto)
-                                    <img src="{{ Storage::disk('local')->url($user->foto) }}" class="img-fluid rounded" style="width: 100px; height: 100px">
+                                    <img src="{{ asset('storage/'.$user->foto) }}" class="img-fluid rounded" style="width: 100px; height: 100px">
                                     @else
                                     <img src="{{ asset('images/profile-default.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px">
                                     @endif
@@ -161,26 +162,36 @@
                                 </td>
                                 <td>{{ $user->role->name }}</td>
                                 <td>
+                                    @if ($user->office == null)
+                                        -- Opsional --
+                                    @else
+                                        {{ $user->office->name }}
+                                    @endif
+                                </td>
+                                <td>
                                     <button type="button" class="badge badge-light pl-2 pr-2" data-toggle="modal" data-target="#detail-{{ $user->id }}" title="Lihat detail">
-                                        <i class="fa fa-eye"></i>
+                                        <i class="fa fa-eye"></i> Detail
                                     </button>
                                     @if ($user->id != Auth::user()->id)
+                                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#edit-{{ $user->id }}" title="Ubah">
+                                            <i class="fa fa-edit"></i> Ubah
+                                        </button>
                                         <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-{{ $user->id }}" title="Hapus">
-                                            <i class="fa fa-trash"></i>
+                                            <i class="fa fa-trash"></i> Hapus
                                         </button>
                                     @endif
                                 </td>
                             </tr>
-                            @endforeach --}}
+                            @endforeach
                         </tbody>
                     </table>
 
                     {{-- modal --}}
-                    {{-- @foreach ($users as $user)
+                    @foreach ($users as $user)
                         @include('backoffice.user-data.user.modal.delete')
                         @include('backoffice.user-data.user.modal.edit')
                         @include('backoffice.user-data.user.modal.detail')
-                    @endforeach --}}
+                    @endforeach
 
                 </div>
 

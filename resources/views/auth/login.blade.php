@@ -29,7 +29,7 @@
     <div class="login-box">
         <div class="card">
             <div class="text-center">
-                <img src="{{asset('images/absen-login.jpg')}}" class="img-fluid rounded mt-4" alt="" style="height: 100px; width: 180px">
+                <img src="{{asset('images/tekmt.png')}}" class="img-fluid rounded mt-4" alt="" style="height: 100px; width: 180px">
             </div>
             
             <div class="card-body login-card-body">

@@ -10,7 +10,7 @@
             <div class="modal-body">
                 <div class="card card-outline card-primary">
                     <div class="card-body">
-                        <p>Apakah anda yakin ingin menghapus pengajuan?</p>
+                        <p>Apakah anda yakin setujui pengajuan?</p>
                     </div>
                 </div>
             </div>
@@ -18,8 +18,8 @@
                 <button type="button" class="btn btn-warning" data-dismiss="modal">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </button>
-                <a href="/backoffice/submission/izin-sakit/{{ $submission->id }}/delete" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Hapus
+                <a href="/backoffice/submission/izin-sakit/{{ $submission->id }}/confirm" class="btn btn-success">
+                    <i class="fas fa-check"></i> Setuju
                 </a>
             </div>
         </div>
