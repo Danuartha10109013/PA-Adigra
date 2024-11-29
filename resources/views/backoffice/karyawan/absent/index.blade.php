@@ -185,7 +185,8 @@
     </div>
 
     <script>
-        const map = L.map('map').setView([{{ auth()->user()->office->latitude }}, {{ auth()->user()->office->longitude }}], 13);
+            
+            const map = L.map('map').setView([{{ auth()->user()->office->latitude }}, {{ auth()->user()->office->longitude }}], 13);
         
             const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -234,7 +235,7 @@
             // end marker
 
             // start circle
-            var circle = L.circle([ -6.239028847049527 ,  106.79918337392736 ], {
+            var circle = L.circle([ {{ auth()->user()->office->latitude }} ,  {{ auth()->user()->office->longitude }} ], {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.5,

@@ -99,7 +99,7 @@
     </div>
 
     <script>
-        const map = L.map('map').setView([-6.239028847049527, 106.79918337392736], 13);
+        const map = L.map('map').setView([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}], 13);
         
             const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -107,8 +107,8 @@
             }).addTo(map);
     
             // start marker
-            var marker = L.marker([{{ $absent->office->longitude }}, {{ $absent->office->latitude }}])
-                            .bindPopup('Lokasi {{ $absent->office->name }}')
+            var marker = L.marker([{{ $absent->office->latitude }},{{ $absent->office->longitude }}])
+                            .bindPopup('Lokasi kantor')
                             .addTo(map);
                     
             var iconMarker = L.icon({
@@ -118,20 +118,41 @@
                 popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
             });
 
-            var marker2 = L.marker([{{ $absent->longitude }}, {{ $absent->latitude }}], {
-                icon: iconMarker,
-                draggable: false
-            })
-            .bindPopup('Lokasi Anda')
-            .addTo(map);
+            // var marker2 = L.marker([ -6.239028847049527 ,  106.79918337392736 ], {
+            //     icon: iconMarker,
+            //     draggable: false
+            // })
+            // .bindPopup('Lokasi Anda')
+            // .addTo(map);
+
+
+            // get location user
+            // navigator.geolocation.getCurrentPosition(function(position) {
+            //     var latitude = position.coords.latitude;
+            //     var longitude = position.coords.longitude;
+            //     console.log(latitude, longitude);
+            //     document.getElementById('latitudeSpan').innerHTML = latitude;
+            //     document.getElementById('longitudeSpan').innerHTML = longitude;
+            //     document.getElementById('latitude').value = latitude;
+            //     document.getElementById('longitude').value = longitude;
+
+            //     var marker2 = L.marker([latitude, longitude], {
+            //         icon: iconMarker,
+            //         draggable: false
+            //     })
+            //     .bindPopup('Lokasi Anda')
+            //     .addTo(map);
+            // });
+
+
             // end marker
 
             // start circle
-            var circle = L.circle([{{ $absent->office->longitude }}, {{ $absent->office->latitude }}], {
+            var circle = L.circle([ -6.239028847049527 ,  106.79918337392736 ], {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.5,
-                radius: {{ $absent->office->radius }}
+                radius: {{ $absent->office->radius * 2 }}
             }).addTo(map).bindPopup('Radius Kantor');
             // end circle
         

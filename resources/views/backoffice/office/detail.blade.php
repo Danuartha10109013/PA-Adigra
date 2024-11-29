@@ -112,7 +112,7 @@
 </script> --}}
 
 <script>
-    const map = L.map('map').setView([{{ $office->longitude }}, {{ $office->latitude }}], 13);
+    const map = L.map('map').setView([{{ $office->latitude }}, {{ $office->longitude }}], 13);
     
         const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -120,17 +120,17 @@
         }).addTo(map);
 
         // start marker
-        var marker = L.marker([-6.239028847049527, 106.79918337392736])
+        var marker = L.marker([{{ $office->latitude }}, {{ $office->longitude }}])
                         .bindPopup('Tampilan pesan disini')
                         .addTo(map);
         // end marker
 
         // start circle
-        var circle = L.circle([-6.239028847049527, 106.79918337392736], {
+        var circle = L.circle([{{ $office->latitude }}, {{ $office->longitude }}], {
             color: 'red',
             fillColor: '#f03',
             fillOpacity: 0.5,
-            radius: {{ $office->radius }}
+            radius: {{ $office->radius * 2 }}
         }).addTo(map).bindPopup('I am a circle.');
         // end circle
     

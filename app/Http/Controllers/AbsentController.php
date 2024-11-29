@@ -112,7 +112,6 @@ class AbsentController extends Controller
 
         // radius
         if ($distance <= $radiusOffice) {
-            dd('absen');
             if ($absentToday) {
                 if ($absentToday->end == null) {
                     if (now()->format('H:i:s') < $absentToday->shift->end) {
@@ -132,14 +131,13 @@ class AbsentController extends Controller
             $absent->shift_id = $request->shift_id;
             $absent->office_id = Auth::user()->office_id;
             $absent->start = now();
-            $absent->longitude = "-6.25669089852724";
-            $absent->latitude = "106.79641151260287";
+            $absent->latitude = $latitudeUser;
+            $absent->longitude = $longitudeUser;
             $absent->status = "Absen";
             $absent->date = now()->format('Y-m-d');
             $absent->save();
             return redirect('/backoffice/absen/create')->with('success', 'Absen masuk');
         }   else {
-            dd('tidak absen');
             return redirect('/backoffice/absen/create')->with('error', 'Anda tidak berada di radius lokasi kerja');
         }
 

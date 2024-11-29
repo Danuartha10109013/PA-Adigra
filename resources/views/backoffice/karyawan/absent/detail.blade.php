@@ -99,7 +99,7 @@
     </div>
 
     <script>
-        const map = L.map('map').setView([-6.239028847049527, 106.79918337392736], 13);
+        const map = L.map('map').setView([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}], 13);
         
             const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -107,7 +107,7 @@
             }).addTo(map);
     
             // start marker
-            var marker = L.marker([{{ $absent->office->longitude }}, {{ $absent->office->latitude }}])
+            var marker = L.marker([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}])
                             .bindPopup('Lokasi {{ $absent->office->name }}')
                             .addTo(map);
                     
@@ -118,7 +118,7 @@
                 popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
             });
 
-            var marker2 = L.marker([{{ $absent->longitude }}, {{ $absent->latitude }}], {
+            var marker2 = L.marker([{{ $absent->latitude }}, {{ $absent->longitude }}], {
                 icon: iconMarker,
                 draggable: false
             })
@@ -127,11 +127,11 @@
             // end marker
 
             // start circle
-            var circle = L.circle([{{ $absent->office->longitude }}, {{ $absent->office->latitude }}], {
+            var circle = L.circle([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}], {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.5,
-                radius: {{ $absent->office->radius }}
+                radius: {{ $absent->office->radius * 2 }}
             }).addTo(map).bindPopup('Radius Kantor');
             // end circle
         

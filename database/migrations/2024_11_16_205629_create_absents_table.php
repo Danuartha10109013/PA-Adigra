@@ -21,8 +21,8 @@ return new class extends Migration
             $table->foreign('shift_id')->references('id')->onDelete('set null')->on('shifts');
             $table->time('start')->nullable();
             $table->time('end')->nullable();
-            $table->string('longitude')->nullable();
-            $table->string('latitude')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
             $table->string('status');
             $table->text('description')->nullable();
             $table->date('date');

@@ -33,9 +33,9 @@
                             <div class="form-group">
                                 <label>Koordinat <span class="text-danger">*</span></label>
                                 <div class="d-flex">
-                                    <input type="text"  name="latitude" class="form-control ml-1 @if($errors->has('latitude')) is-invalid @endif" placeholder="Latitude" value="{{ $office->latitude }}"
+                                    <input type="text"  name="latitude" class="form-control mr-1 @if($errors->has('latitude')) is-invalid @endif" placeholder="Latitude" value="{{ $office->latitude }}"
                                     required oninvalid="this.setCustomValidity('Latitude harus diisi')" oninput="this.setCustomValidity('')">
-                                    <input type="text"  name="longitude" class="form-control mr-1 @if($errors->has('longitude')) is-invalid @endif" placeholder="Longitude" value="{{ $office->longitude }}"
+                                    <input type="text"  name="longitude" class="form-control ml-1 @if($errors->has('longitude')) is-invalid @endif" placeholder="Longitude" value="{{ $office->longitude }}"
                                     required oninvalid="this.setCustomValidity('Longitude harus diisi')" oninput="this.setCustomValidity('')">
                                 </div>
                             </div>

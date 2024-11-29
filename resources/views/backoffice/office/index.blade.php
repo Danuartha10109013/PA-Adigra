@@ -101,7 +101,7 @@
                                             <p>{{ $office->address }}</p>
                                         </div>
                                         <ul>
-                                            <li>Koordinat: {{ $office->longitude }}, {{ $office->latitude }}</li>
+                                            <li>Koordinat: {{ $office->latitude }}, {{ $office->longitude }}</li>
                                             <li>Radius(meter): {{ $office->radius }}</li>
                                             {{-- <li>Koordinat: -6.25669089852724, 106.79641151260287</li>
                                             <li>Radius(meter): 20</li> --}}
