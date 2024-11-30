@@ -4,6 +4,7 @@ namespace App\Http\Repository;
 
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TaskRepository
 {
@@ -43,6 +44,14 @@ class TaskRepository
             $task = new Task();
             $task->user_id = Auth::user()->id;
             $task->task = $data->task;
+
+            if ($data->file('file')) {
+                $file = $data->file('file');
+                $task->filename = $file->getClientOriginalName();
+                $path = Storage::disk('public')->put('task', $file);
+                $task->file = $path;
+            }
+
             $task->save();
 
             return $task;
@@ -56,6 +65,16 @@ class TaskRepository
         try {
             $task = Task::find($id);
             $task->task = $data->task;
+            if ($data->file('file')) {
+                if ($task->file) {
+                    Storage::disk('public')->delete($task->file);
+                }
+                $file = $data->file('file');
+                $task->filename = $file->getClientOriginalName();
+                $path = Storage::disk('public')->put('task', $file);
+                $task->file = $path;
+            }
+
             $task->save();
 
             return $task;
@@ -68,9 +87,26 @@ class TaskRepository
     {
         try {
             $task = Task::find($id);
+            if ($task->file) {
+                Storage::disk('public')->delete($task->file);
+            }
             $task->delete();
         } catch (\Throwable $th) {
             throw $th;
         }
     }
+
+    public function deleteFile($id)
+    {
+        try {
+            $task = Task::find($id);
+            Storage::disk('public')->delete($task->file);
+            $task->file = null;
+            $task->filename = null;
+            $task->save();
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
 }

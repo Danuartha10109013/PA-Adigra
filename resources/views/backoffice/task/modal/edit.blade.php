@@ -19,8 +19,19 @@
                                 <textarea name="task" class="form-control" rows="6" required
                                 oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Task harus diisi')">{{ $task->task }}</textarea>
                                 @if($errors->has('name'))
-                                <small class="help-block" style="color: red">{{ $errors->first('name') }}</small>
+                                    <small class="help-block" style="color: red">{{ $errors->first('name') }}</small>
                                 @endif
+                            </div>
+                            <div class="form-group">
+                                <label>Berkas</label>
+                                @if ($task->file)
+                                    <div>
+                                        <i class="fa fa-file-pdf"></i> {{ $task->filename }}
+                                    </div>
+                                    <hr>
+                                @endif
+                                <input type="file" class="form-control" name="file" accept="application/pdf">
+                                <small>* Kosongkan jika tidak ingin mengubah berkas</small>
                             </div>
                         </div>
                     </div>

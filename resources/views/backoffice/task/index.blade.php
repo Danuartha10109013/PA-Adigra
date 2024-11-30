@@ -166,7 +166,10 @@
                                 @endif
                                 <th>Dibuat Tanggal</th>
                                 <th>Task / Tugas</th>
-                                <th>Aksi</th>
+                                <th>Berkas</th>
+                                @if (auth()->user()->role_id == 2)
+                                    <th>Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -184,13 +187,28 @@
                                     <td>{{ $task->created_at }}</td>
                                     <td>{{ $task->task }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-{{ $task->id }}" title="Ubah">
-                                            <i class="fa fa-edit"></i> Ubah
-                                        </button>
-                                        <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-{{ $task->id }}" title="Hapus">
-                                            <i class="fa fa-trash"></i> Hapus
-                                        </button>
+                                        @if ($task->file)
+                                            <a href="/backoffice/task/{{ $task->id }}/preview" class="badge badge-light" target="_blank">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            {{ $task->filename }} | 
+                                            <button class="badge badge-danger" data-toggle="modal" data-target="#delete-file-{{ $task->id }}" title="Hapus">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        @else
+                                            <span class="badge badge-light">Tidak ada berkas</span>
+                                        @endif
                                     </td>
+                                    @if (auth()->user()->role_id == 2)
+                                        <td>
+                                            <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-{{ $task->id }}" title="Ubah">
+                                                <i class="fa fa-edit"></i> Ubah
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-{{ $task->id }}" title="Hapus">
+                                                <i class="fa fa-trash"></i> Hapus
+                                            </button>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
 

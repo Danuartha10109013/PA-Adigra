@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Repository\TaskRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -44,4 +45,23 @@ class TaskController extends Controller
 
         return redirect('/backoffice/task')->with('success', 'Berhasil menghapus task');
     }
+
+    public function deleteFile($id)
+    {
+        $this->taskRepository->deleteFile($id);
+
+        return redirect('/backoffice/task')->with('success', 'Berhasil menghapus file task');
+    }
+
+    public function preview($id)
+    {
+        try {
+            $task = $this->taskRepository->getById($id);
+            $file = Storage::disk('public')->get($task->file);
+            return response($file)->header('Content-Type', 'application/pdf');
+        } catch (\Throwable $th) {
+            return $th;
+        }
+    }
+
 }

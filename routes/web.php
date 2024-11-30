@@ -87,6 +87,8 @@ Route::middleware(['auth'])->group(function () {
             Route::group(['prefix' => '{task_id}'], function () {
                 Route::put('/update', [TaskController::class, 'update']);
                 Route::get('/delete', [TaskController::class, 'delete']);
+                Route::get('/delete-file', [TaskController::class, 'deleteFile']);
+                Route::get('/preview', [TaskController::class, 'preview']);
             });
         });
 

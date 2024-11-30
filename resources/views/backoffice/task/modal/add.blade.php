@@ -21,6 +21,10 @@
                                 <small class="help-block" style="color: red">{{ $errors->first('task') }}</small>
                                 @endif
                             </div>
+                            <div class="form-group">
+                                <label>Berkas</label>
+                                <input type="file" class="form-control" name="file" accept="application/pdf">
+                            </div>
                         </div>
                     </div>
 
