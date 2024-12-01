@@ -172,6 +172,7 @@
                                 <th>#</th>
                                 <th>Karyawan</th>
                                 <th>Tanggal</th>
+                                <th>Kantor</th>
                                 <th>Shift</th>
                                 <th>Jam Masuk</th>
                                 <th>Jam Pulang</th>
@@ -199,6 +200,11 @@
                                 </td>
                                 <td>
                                     {{  \Carbon\Carbon::parse($absent->date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+                                </td>
+                                <td>
+                                    @if ($absent->office_id)
+                                        {{ $absent->office->name }}
+                                    @endif
                                 </td>
                                 <td>
                                     @if ($absent->shift_id)

@@ -82,10 +82,12 @@
                                                 data-target="#edit-{{ $office->id }}" title="Ubah">
                                                 <span><i class="fa fa-edit"></i></span>
                                             </button>
-                                            <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
-                                                data-target="#delete-{{ $office->id }}" title="Hapus">
-                                                <span><i class="fa fa-trash"></i></span>
-                                            </button>
+                                            @if ($office->users->count() == 0)
+                                                <button type="button" class="btn btn-tool btn-sm" data-toggle="modal"
+                                                    data-target="#delete-{{ $office->id }}" title="Hapus">
+                                                    <span><i class="fa fa-trash"></i></span>
+                                                </button>
+                                            @endif
                                             <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
                                                     class="fas fa-minus"></i>
                                             </button>
