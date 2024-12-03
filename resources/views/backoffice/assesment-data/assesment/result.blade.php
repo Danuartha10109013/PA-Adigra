@@ -27,11 +27,6 @@
                     <h3 class="card-title">Penilaian</h3>
 
                     <div class="card-tools">
-                        <button title="Tambah" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#tambah">
-                            <span class="fa fa-plus"></span> Tambah
-                        </button>
-
-                        @include('backoffice.assesment-data.assesment.modal.add')
 
                         <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
                             data-toggle="tooltip" title="Collapse">
