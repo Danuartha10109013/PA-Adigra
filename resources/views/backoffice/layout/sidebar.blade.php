@@ -104,6 +104,39 @@
                         </ul>
                     </li>
 
+                    <li class="nav-item has-treeview {{ request()->is('backoffice/assesment-data/*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->is('backoffice/assesment-data/*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-chart-pie"></i>
+                            <p>
+                                Data Penilaian
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="/backoffice/assesment-data/criteria"
+                                    class="nav-link {{ request()->is('backoffice/assesment-data/criteria', 'backoffice/assesment-data/criteria/*') ? 'active' : '' }}">
+                                    <i class="fa fa-circle fa-regular nav-icon"></i>
+                                    <p>Kriteria</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/backoffice/assesment-data/assesment"
+                                    class="nav-link {{ request()->is('backoffice/assesment-data/assesment', 'backoffice/assesment-data/assesment/*') ? 'active' : '' }}">
+                                    <i class="fa fa-circle fa-regular nav-icon"></i>
+                                    <p>Penilaian</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/backoffice/assesment-data/result"
+                                    class="nav-link {{ request()->is('backoffice/assesment-data/result', 'backoffice/assesment-data/result/*') ? 'active' : '' }}">
+                                    <i class="fa fa-circle fa-regular nav-icon"></i>
+                                    <p>Hasil</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     {{-- <li class="nav-item has-treeview {{ request()->is('backoffice/master-data/*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->is('backoffice/master-data/*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-landmark"></i>

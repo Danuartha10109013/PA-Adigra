@@ -23,6 +23,15 @@ class UserRepository
         }
     }
 
+    public function getAllNonAdmin()
+    {
+        try {
+            return User::where('role_id', '!=', 1)->get();
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function getByAuth()
     {
         try {

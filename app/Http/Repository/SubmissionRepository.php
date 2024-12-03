@@ -74,18 +74,29 @@ class SubmissionRepository
             // insert to absent foreach
             $start = new \DateTime($submission->start_date);
             $end = new \DateTime($submission->end_date);
-            $interval = $start->diff($end);
-            $days = $interval->format('%a');
-            $total_hari = $days + 1;
-            for ($i = 0; $i < $total_hari; $i++) {
+
+            if ($start == $end) {
                 $absent = new Absent();
                 $absent->user_id = $submission->user_id;
-                $absent->office_id = 1;
+                $absent->office_id = $submission->user->office_id;
                 $absent->status = $submission->type;
                 $absent->date = $start->format('Y-m-d');
                 $absent->description = $submission->description;
                 $absent->save();
-                $start->modify('+1 day');
+            } else {
+                $interval = $start->diff($end);
+                $days = $interval->format('%a');
+                $total_hari = $days + 1;
+                for ($i = 0; $i < $total_hari; $i++) {
+                    $absent = new Absent();
+                    $absent->user_id = $submission->user_id;
+                    $absent->office_id = $submission->user->office_id;
+                    $absent->status = $submission->type;
+                    $absent->date = $start->format('Y-m-d');
+                    $absent->description = $submission->description;
+                    $absent->save();
+                    $start->modify('+1 day');
+                }
             }
 
             return $submission;

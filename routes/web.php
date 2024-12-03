@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AbsentController;
+use App\Http\Controllers\AssesmentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\OfficeController;
@@ -125,6 +127,43 @@ Route::middleware(['auth'])->group(function () {
                     Route::get('/delete', [UserController::class, 'delete']);
                 });
 
+            });
+
+        });
+
+        // grup assesment
+        Route::group(['prefix' => 'assesment-data'], function () {
+            
+            // grup criteria
+            Route::group(['prefix' => 'criteria'], function () {
+                Route::get('/', [CriteriaController::class, 'index']);
+                Route::post('/create', [CriteriaController::class, 'create']);
+
+                // grup criteria_id
+                Route::group(['prefix' => '{criteria_id}'], function () {
+                    Route::put('/update', [CriteriaController::class, 'update']);
+                    Route::get('/delete', [CriteriaController::class, 'delete']);
+                });
+            });
+
+            // grup assesment
+            Route::group(['prefix' => 'assesment'], function () {
+                Route::get('/', [AssesmentController::class, 'index']);
+                Route::post('/store', [AssesmentController::class, 'store']);
+                Route::post('/tes', [AssesmentController::class, 'tes']);
+                Route::put('/update', [AssesmentController::class, 'update']);
+
+                // grup assesment_id
+                Route::group(['prefix' => '{assesment_id}'], function () {
+                    Route::get('/edit', [AssesmentController::class, 'edit']);
+                    Route::put('/update', [AssesmentController::class, 'update']);
+                    Route::get('/delete', [AssesmentController::class, 'delete']);
+                });
+            });
+
+            // grup result
+            Route::group(['prefix' => 'result'], function () {
+                Route::get('/', [AssesmentController::class, 'result']);
             });
 
         });
