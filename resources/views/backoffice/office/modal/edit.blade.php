@@ -38,14 +38,16 @@
                                     <input type="text"  name="longitude" class="form-control ml-1 @if($errors->has('longitude')) is-invalid @endif" placeholder="Longitude" value="{{ $office->longitude }}"
                                     required oninvalid="this.setCustomValidity('Longitude harus diisi')" oninput="this.setCustomValidity('')">
                                 </div>
+                                <small class="form-text text-muted">Contoh: Latitude: -6.2088, Longitude: 106.8456</small>
                             </div>
                             <div class="form-group">
-                                <label>Radius <span class="text-danger">*</span></label>
-                                <input type="number"  name="radius" class="form-control @if($errors->has('radius')) is-invalid @endif" placeholder="Radius" value="{{ $office->radius }}"
-                                required oninvalid="this.setCustomValidity('Kantor harus diisi')" oninput="this.setCustomValidity('')">
+                                <label>Radius (meter) <span class="text-danger">*</span></label>
+                                <input type="number"  name="radius" class="form-control @if($errors->has('radius')) is-invalid @endif" placeholder="Radius dalam meter" value="{{ $office->radius }}"
+                                required oninvalid="this.setCustomValidity('Radius harus diisi')" oninput="this.setCustomValidity('')">
                                 @if($errors->has('radius'))
                                 <small class="help-block" style="color: red">{{ $errors->first('radius') }}</small>
                                 @endif
+                                <small class="form-text text-muted">Contoh: 100 (untuk radius 100 meter)</small>
                             </div>
                         </div>
                     </div>

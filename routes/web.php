@@ -6,23 +6,28 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisionController;
+use App\Http\Controllers\MeetController;
 use App\Http\Controllers\OfficeController;
+use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AttendanceSummaryController;
+use App\Http\Controllers\LeaveQuotaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/verify/{token}', [AuthController::class, 'verify']);
+Route::get('/meetings/update-status', [MeetController::class, 'updateMeetingStatus'])->name('meetings.updateStatus');
 
 // route middleware guest
 Route::middleware(['guest'])->group(function () {
 
     // route auth
     Route::get('/', [AuthController::class, 'login'])->name('login');
-    Route::post('/login', [AuthController::class, 'loginAction']);
+    Route::post('/login', [AuthController::class, 'loginAction'])->name('login.action');
     Route::get('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('forgot-password', [AuthController::class, 'forgotPasswordAction']);
     Route::get('reset-password/{token}', [AuthController::class, 'resetPassword']);
@@ -262,7 +267,56 @@ Route::middleware(['auth'])->group(function () {
             });
 
         });
+
+        // grup meet
+        Route::group(['prefix' => 'meet'], function () {
+            Route::get('/', [MeetController::class, 'index']);
+            Route::post('/create', [MeetController::class, 'store']);
+            Route::post('/{meet}/notulensi', [MeetController::class, 'addNotulensi'])->name('meet.notulensi');
+            Route::post('/{meet}/complete', [MeetController::class, 'complete'])->name('meet.complete');
+
+            // grup meet_id
+            Route::group(['prefix' => '{meet_id}'], function () {
+                Route::put('/update', [MeetController::class, 'update']);
+                Route::get('/delete', [MeetController::class, 'delete']);
+            });
+        });
+
+        // grup penilaian
+        Route::group(['prefix' => 'penilaian'], function () {
+            Route::get('/', [PenilaianController::class, 'index']);
+            Route::post('/add', [PenilaianController::class, 'add']);
+            Route::post('/create', [PenilaianController::class, 'create']);
+
+            // grup penilaian_id
+            Route::group(['prefix' => '{penilaian_id}'], function () {
+                Route::put('/update', [PenilaianController::class, 'update']);
+                Route::put('/edit', [PenilaianController::class, 'edit']);
+                Route::get('/detail', [PenilaianController::class, 'detail']);
+                Route::get('/delete', [PenilaianController::class, 'delete']);
+                Route::put('/nilai', [PenilaianController::class, 'nilai']);
+            });
+        });
+
+        // grup leave quota
+        Route::group(['prefix' => 'leave-quota'], function () {
+            Route::get('/', [LeaveQuotaController::class, 'index'])->name('leave-quota.index');
+            Route::post('/store', [LeaveQuotaController::class, 'store'])->name('leave-quota.store');
+            Route::post('/update/{id}', [LeaveQuotaController::class, 'update'])->name('leave-quota.update');
+            Route::get('/delete/{id}', [LeaveQuotaController::class, 'destroy'])->name('leave-quota.delete');
+        });
         
+    });
+
+    // Attendance Summary Routes
+    Route::prefix('backoffice/attendance/summary')->name('attendance.summary.')->group(function () {
+        Route::get('/', [AttendanceSummaryController::class, 'index'])->name('index');
+        Route::get('/create', [AttendanceSummaryController::class, 'create'])->name('create');
+        Route::post('/store', [AttendanceSummaryController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [AttendanceSummaryController::class, 'edit'])->name('edit');
+        Route::post('/update/{id}', [AttendanceSummaryController::class, 'update'])->name('update');
+        Route::get('/delete/{id}', [AttendanceSummaryController::class, 'delete'])->name('delete');
+        Route::get('/report', [AttendanceSummaryController::class, 'report'])->name('report');
     });
 
 });

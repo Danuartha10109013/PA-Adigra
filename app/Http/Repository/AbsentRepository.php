@@ -142,7 +142,17 @@ class AbsentRepository
     public function getAbsenTodayByUserId()
     {
         try {
-            return Absent::where('user_id', Auth::user()->id)->whereDate('date', now()->format('Y-m-d'))->first();
+            return Absent::where('user_id', Auth::user()->id)
+                ->whereDate('date', now()->format('Y-m-d'))
+                ->where(function($query) {
+                    $query->where('description', 'not like', 'Meeting keluar kota: %')
+                          ->orWhereNull('description');
+                })
+                ->where(function($query) {
+                    $query->where('status', '!=', 'completed')
+                          ->orWhereNull('status');
+                })
+                ->first();
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -151,7 +161,7 @@ class AbsentRepository
     public function getById($id)
     {
         try {
-            return Absent::find($id);
+            return Absent::with(['office', 'user'])->find($id);
         } catch (\Throwable $th) {
             throw $th;
         }

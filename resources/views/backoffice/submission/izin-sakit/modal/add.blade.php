@@ -42,6 +42,10 @@
                                 @endif
                             </div>
                             <div class="form-group">
+                                <label>Surat Izin/Sakit</label>
+                                <input type="file" class="form-control" name="file" accept="*/*">
+                            </div>
+                            <div class="form-group">
                                 <label>Alasan Pengajuan <span class="text-danger">*</span></label>
                                 <textarea name="description" class="form-control @if($errors->has('description')) is-invalid @endif" placeholder="Alasan Pengajuan"
                                 required oninvalid="this.setCustomValidity('Alasan Pengajuan harus diisi')" oninput="this.setCustomValidity('')"></textarea>

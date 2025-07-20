@@ -62,7 +62,7 @@
                     <h4 class="message-head">{{ session('message') }}</h4>
                 </div>
                 @endif
-                <form action="/login" method="POST">
+                <form action="{{ route('login.action') }}" method="POST">
                     {{ csrf_field() }}
                     @if($errors->has('email'))
                         <span class="help-block text-danger mb-4">{{ $errors->first('email') }}</span>

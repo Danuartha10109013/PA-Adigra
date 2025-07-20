@@ -22,6 +22,7 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
 
+            @if ($absent)
             <!-- Default box -->
             <div class="card card-outline card-primary">
                 <div class="card-header">
@@ -61,9 +62,17 @@
                                 <div class="card bg-warning">
                                     <div class="card-body">
                                         <h3>
-                                            <b>Anda sedang {{ $absent->status }}</b>
+                                            <b>
+                                                @if ($absent->status == 'Meeting Keluar Kota')
+                                                    Anda sedang dalam Meeting Keluar Kota
+                                                @elseif ($absent->status == 'completed')
+                                                    Meeting Keluar Kota sudah selesai
+                                                @else
+                                                    Anda sedang {{ $absent->status }}
+                                                @endif
+                                            </b>
                                         </h3>
-                                        <b>Keterangan:</b> {{ $absent->description }}
+                                        <b>Keterangan:</b> {{ $absent->description ?: 'Tidak ada keterangan' }}
                                     </div>
                                 </div>
                             @endif
@@ -72,20 +81,46 @@
                                 <div class="card-body">
 
                                     <p>Hari: <b>{{  \Carbon\Carbon::parse($absent->date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</b></p>
-                                    <p>Nama Kantor: <b>{{ $absent->office->name }}</b></p>
-                                    <p>Alamat Kantor: <b>{{ $absent->office->address }}</b></p>
-                                    <p>Radius Kantor: <b>{{ $absent->office->radius }} Meter</b></p>
-                                    <p>Jadwal Shift: 
+                                    <p>Nama Kantor: <b>{{ $absent->office ? $absent->office->name : 'Tidak ada data kantor' }}</b></p>
+                                    <p>Alamat Kantor: <b>{{ $absent->office ? $absent->office->address : 'Tidak ada data alamat' }}</b></p>
+                                    <p>Radius Kantor: <b>{{ $absent->office ? $absent->office->radius . ' Meter' : 'Tidak ada data radius' }}</b></p>
+                                    <p>Jam Kerja Minimal: <b>{{ $absent->user ? $absent->user->minimum_work_hours : 5 }} jam per hari</b></p>
+                                    <p>Jam Masuk: <b>{{ $absent->start ? \Carbon\Carbon::parse($absent->start)->format('H:i') : '-' }}</b></p>
+                                    <p>Jam Keluar: <b>{{ $absent->end ? \Carbon\Carbon::parse($absent->end)->format('H:i') : '-' }}</b></p>
+                                    <p>Total Jam Kerja: 
                                         <b>
-                                            @if ($absent->shift_id == null)
-                                                
+                                            @if ($absent->start && $absent->end)
+                                                @php
+                                                    $start = \Carbon\Carbon::parse($absent->start);
+                                                    $end = \Carbon\Carbon::parse($absent->end);
+                                                    $workMinutes = $end->diffInMinutes($start);
+                                                    $workHours = floor($workMinutes / 60);
+                                                    $workMinutesRemaining = $workMinutes % 60;
+                                                @endphp
+                                                @if ($workHours > 0)
+                                                    {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                                @else
+                                                    {{ $workMinutesRemaining }} menit
+                                                @endif
+                                            @elseif ($absent->start && !$absent->end)
+                                                @php
+                                                    $start = \Carbon\Carbon::parse($absent->start);
+                                                    $current = \Carbon\Carbon::now();
+                                                    $workMinutes = $current->diffInMinutes($start);
+                                                    $workHours = floor($workMinutes / 60);
+                                                    $workMinutesRemaining = $workMinutes % 60;
+                                                @endphp
+                                                @if ($workHours > 0)
+                                                    {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                                @else
+                                                    {{ $workMinutesRemaining }} menit
+                                                @endif
+                                                <br><small class="text-info">(Sedang bekerja)</small>
                                             @else
-                                                {{ $absent->shift->name }} | {{ $absent->shift->start }} - {{ $absent->shift->end }}
+                                                -
                                             @endif
                                         </b>
                                     </p>
-                                    <p>Jam Masuk: <b>{{ $absent->start }}</b></p>
-                                    <p>Jam Keluar: <b>{{ $absent->end }}</b></p>
                                 </div>
                             </div>
                         </div>
@@ -94,13 +129,20 @@
                 </div>
 
             </div>
+            @else
+            <div class="alert alert-danger">
+                Data absensi tidak ditemukan.
+            </div>
+            @endif
 
         </div>
     </div>
 
+    @if ($absent)
     <script>
-        const map = L.map('map').setView([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}], 13);
-        
+        @if($absent->office)
+            const map = L.map('map').setView([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}], 13);
+            
             const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -108,24 +150,9 @@
     
             // start marker
             var marker = L.marker([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}])
-                            .bindPopup('Lokasi {{ $absent->office->name }}')
-                            .addTo(map);
-                    
-            var iconMarker = L.icon({
-                iconUrl: 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png',
-                iconSize:     [50, 50], // size of the icon
-                iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
-                popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
-            });
-
-            var marker2 = L.marker([{{ $absent->latitude }}, {{ $absent->longitude }}], {
-                icon: iconMarker,
-                draggable: false
-            })
-            .bindPopup('Lokasi Anda')
-            .addTo(map);
-            // end marker
-
+                                .bindPopup('Lokasi {{ $absent->office->name }}')
+                                .addTo(map);
+            
             // start circle
             var circle = L.circle([{{ $absent->office->latitude }}, {{ $absent->office->longitude }}], {
                 color: 'red',
@@ -134,8 +161,29 @@
                 radius: {{ $absent->office->radius * 2 }}
             }).addTo(map).bindPopup('Radius Kantor');
             // end circle
-        
+
+            var iconMarker = L.icon({
+                iconUrl: 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png',
+                iconSize:     [50, 50], // size of the icon
+                iconAnchor:   [25, 50], // point of the icon which will correspond to marker's location
+                popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+            });
+
+            @if($absent->latitude && $absent->longitude)
+            var marker2 = L.marker([{{ $absent->latitude }}, {{ $absent->longitude }}], {
+                icon: iconMarker,
+                draggable: false
+            })
+            .bindPopup('Lokasi Anda')
+            .addTo(map);
+            @endif
+            // end marker
+        @else
+            // Jika tidak ada data office, tampilkan pesan
+            document.getElementById('map').innerHTML = '<div class="alert alert-warning text-center">Tidak ada data lokasi kantor</div>';
+        @endif
     </script>
+    @endif
 
 </section>
 

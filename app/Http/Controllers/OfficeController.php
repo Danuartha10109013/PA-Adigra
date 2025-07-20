@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Repository\OfficeRepository;
+use App\Models\Office;
 use Illuminate\Http\Request;
 
 class OfficeController extends Controller
@@ -17,7 +18,8 @@ class OfficeController extends Controller
     public function index()
     {
         $offices = $this->officeRepository->getAll();
-        return view('backoffice.office.index', compact('offices'));
+        $office = Office::orderBy('id', 'desc')->first();
+        return view('backoffice.office.index', compact('offices', 'office'));
     }
 
     public function create(Request $request)

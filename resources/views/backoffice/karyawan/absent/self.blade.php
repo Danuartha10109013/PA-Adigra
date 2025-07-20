@@ -90,15 +90,6 @@
                         </div>
                     </div>
 
-                    {{-- <h3 class="card-title">Absensi</h3>
-
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
-                            data-toggle="tooltip" title="Collapse">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                    </div> --}}
-
                 </div>
                 <div class="card-body">
 
@@ -171,11 +162,10 @@
                             <tr>
                                 <th>#</th>
                                 <th>Tanggal</th>
-                                <th>Shift</th>
                                 <th>Jam Masuk</th>
                                 <th>Jam Pulang</th>
+                                <th>Jam Kerja</th>
                                 <th>Status</th>
-                                <th>Keterangan</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -187,19 +177,51 @@
                                 <td>
                                     {{  \Carbon\Carbon::parse($absent->date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
                                 </td>
+                                <td>{{ $absent->start ? \Carbon\Carbon::parse($absent->start)->format('H:i') : '-' }}</td>
+                                <td>{{ $absent->end ? \Carbon\Carbon::parse($absent->end)->format('H:i') : '-' }}</td>
                                 <td>
-                                    @if ($absent->shift_id)
-                                        {{ $absent->shift->name }}
+                                    @if ($absent->start && $absent->end)
+                                        @php
+                                            $start = \Carbon\Carbon::parse($absent->start);
+                                            $end = \Carbon\Carbon::parse($absent->end);
+                                            $workMinutes = $end->diffInMinutes($start);
+                                            $workHours = floor($workMinutes / 60);
+                                            $workMinutesRemaining = $workMinutes % 60;
+                                        @endphp
+                                        @if ($workHours > 0)
+                                            {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                        @else
+                                            {{ $workMinutesRemaining }} menit
+                                        @endif
+                                    @elseif ($absent->start && !$absent->end)
+                                        @php
+                                            $start = \Carbon\Carbon::parse($absent->start);
+                                            $current = \Carbon\Carbon::now();
+                                            $workMinutes = $current->diffInMinutes($start);
+                                            $workHours = floor($workMinutes / 60);
+                                            $workMinutesRemaining = $workMinutes % 60;
+                                        @endphp
+                                        @if ($workHours > 0)
+                                            {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                        @else
+                                            {{ $workMinutesRemaining }} menit
+                                        @endif
+                                        <br><small class="text-info">(Sedang bekerja)</small>
+                                    @else
+                                        -
                                     @endif
                                 </td>
-                                <td>{{ $absent->start }}</td>
-                                <td>{{ $absent->end }}</td>
-                                <td>{{ $absent->status }}</td>
                                 <td>
-                                    @if ($absent->description)
-                                        <button class="badge badge-light ml-1" data-toggle="modal" data-target="#description-{{ $absent->id }}" title="Keterangan ditolak">
-                                            <i class="fa fa-eye"></i> Keterangan
-                                        </button>
+                                    @if($absent->is_late)
+                                        <span class="badge badge-warning">Terlambat</span>
+                                    @elseif($absent->is_early_leave)
+                                        <span class="badge badge-warning">Pulang Awal</span>
+                                    @elseif($absent->is_absent)
+                                        <span class="badge badge-danger">Tidak Hadir</span>
+                                    @elseif($absent->is_leave)
+                                        <span class="badge badge-info">{{ ucfirst($absent->leave_type) }}</span>
+                                    @else
+                                        <span class="badge badge-success">Hadir</span>
                                     @endif
                                 </td>
                                 <td>

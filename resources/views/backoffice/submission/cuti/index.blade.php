@@ -84,11 +84,29 @@
                         </form>
     
                         <div class="card-tools">
+                            @php
+                                $userQuota = null;
+                                $sisaCuti = null;
+                                if (auth()->user()->role_id != 1) {
+                                    $tahunIni = date('Y');
+                                    $userQuota = \App\Models\LeaveQuota::where('user_id', auth()->id())->where('year', $tahunIni)->first();
+                                    $sisaCuti = $userQuota ? ($userQuota->quota - $userQuota->used) : 30;
+                                }
+                            @endphp
                             @if (auth()->user()->role_id != 1)
-                                <button title="Tambah" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#tambah">
-                                    <span class="fa fa-plus"></span> Ajukan Cuti
-                                </button>
-                                @include('backoffice.submission.cuti.modal.add')
+                                @if(isset($sisaCuti) && $sisaCuti <= 0)
+                                    <div class="alert alert-danger mb-2" style="font-size:0.95em;">
+                                        <i class="fa fa-exclamation-triangle"></i> Jatah cuti Anda tahun {{ date('Y') }} sudah habis, tidak bisa mengajukan cuti lagi.
+                                    </div>
+                                    <button title="Ajukan Cuti" type="button" class="btn btn-success btn-sm" disabled>
+                                        <span class="fa fa-plus"></span> Ajukan Cuti
+                                    </button>
+                                @else
+                                    <button title="Ajukan Cuti" type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#tambah">
+                                        <span class="fa fa-plus"></span> Ajukan Cuti
+                                    </button>
+                                    @include('backoffice.submission.cuti.modal.add')
+                                @endif
                             @endif
     
                             <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
@@ -120,6 +138,15 @@
                     @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" submission="alert">
                         <strong>Berhasil </strong>{{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    @endif
+
+                    @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" submission="alert">
+                        <strong>Gagal </strong>{{ session('error') }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>

@@ -61,26 +61,48 @@
                                 @csrf
                                 <div class="card card-outline card-primary bg-light">
                                     <div class="card-body">
-
                                         <input type="hidden" id="latitude" name="latitude" class="form-control">
                                         <input type="hidden" id="longitude" name="longitude" class="form-control">
 
+                                        <div class="form-group">
+                                            <label><strong>Jam Kerja Minimal:</strong></label>
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-clock"></i> {{ auth()->user()->minimum_work_hours }} jam per hari
+                                            </div>
+                                        </div>
+
                                         @if ($absentToday)
-                                            @if ($absentToday->status != 'Absen')
-                                                <select name="shift_id" class="form-control" disabled>
-                                                    <option value="">-- Tidak ada shift --</option>
-                                                </select>
-                                            @elseif ($absentToday->start)
-                                                <input type="text" name="shift_id" value="Shift {{ $absentToday->shift->name }} | {{ $absentToday->shift->start }} - {{ $absentToday->shift->end }}" disabled class="form-control">
+                                            @if ($absentToday->status == 'Absen')
+                                                @if ($absentToday->start && !$absentToday->end)
+                                                    <div class="alert alert-success">
+                                                        <i class="fas fa-play"></i> Anda sudah absen masuk
+                                                    </div>
+                                                @elseif ($absentToday->end)
+                                                    <div class="alert alert-success">
+                                                        <i class="fas fa-check"></i> Anda sudah selesai bekerja hari ini
+                                                    </div>
+                                                @else
+                                                    <div class="alert alert-primary">
+                                                        <i class="fas fa-info-circle"></i> Silakan absen masuk untuk memulai kerja
+                                                    </div>
+                                                @endif
+                                            @elseif ($absentToday->status == 'Meeting Keluar Kota')
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-plane"></i> Anda sedang dalam meeting keluar kota
+                                                </div>
+                                            @elseif ($absentToday->status == 'completed')
+                                                <div class="alert alert-success">
+                                                    <i class="fas fa-check-circle"></i> Meeting keluar kota sudah selesai, Anda bisa absen normal
+                                                </div>
+                                            @else
+                                                <div class="alert alert-warning">
+                                                    <i class="fas fa-info-circle"></i> Anda sedang {{ $absentToday->status }}
+                                                </div>
                                             @endif
                                         @else
-                                            <select name="shift_id" class="form-control" required id="shift"
-                                                oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Pilihan shift harus diisi')">
-                                                <option value="">-- Pilihan Shift --</option>
-                                                @foreach ($shifts as $shift)
-                                                <option value="{{ $shift->id }}">Shift {{ $shift->name }} | {{ $shift->start }} - {{ $shift->end }}</option>
-                                                @endforeach
-                                            </select>
+                                            <div class="alert alert-primary">
+                                                <i class="fas fa-info-circle"></i> Silakan absen masuk untuk memulai kerja
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -92,17 +114,31 @@
                                     </div>
                                 </div>
                                 @if ($absentToday)
-                                    @if ($absentToday->start && !$absentToday->end)
+                                    @if ($absentToday->status == 'Absen')
+                                        @if ($absentToday->start && !$absentToday->end)
+                                            <button type="submit" class="btn btn-primary btn-block">
+                                                <span class="fa fa-sign-out"></span> Absen Pulang
+                                            </button>
+                                        @elseif ($absentToday->end)
+                                            <button type="button" class="btn btn-success btn-block" disabled>
+                                                <span class="fa fa-check"></span> Anda Sudah Selesai Bekerja
+                                            </button>
+                                        @else
+                                            <button type="submit" class="btn btn-primary btn-block">
+                                                <span class="fa fa-sign-in"></span> Absen Masuk
+                                            </button>
+                                        @endif
+                                    @elseif ($absentToday->status == 'Meeting Keluar Kota')
+                                        <button type="button" class="btn btn-info btn-block" disabled>
+                                            <span class="fa fa-plane"></span> Meeting Keluar Kota
+                                        </button>
+                                    @elseif ($absentToday->status == 'completed')
                                         <button type="submit" class="btn btn-primary btn-block">
-                                            <span class="fa fa-sign-out"></span> Absen Pulang
+                                            <span class="fa fa-sign-in"></span> Absen Masuk
                                         </button>
-                                    @elseif ($absentToday->end)
-                                        <button type="button" class="btn btn-success btn-block">
-                                            <span class="fa fa-check"></span> Anda Sudah Absen
-                                        </button>
-                                    @elseif ($absentToday->status != 'Absen')
-                                        <button type="button" class="btn btn-success btn-block">
-                                            <span class="fa fa-check"></span> Anda sedang {{ $absentToday->status }}
+                                    @else
+                                        <button type="button" class="btn btn-warning btn-block" disabled>
+                                            <span class="fa fa-info-circle"></span> Anda sedang {{ $absentToday->status }}
                                         </button>
                                     @endif
                                 @else
@@ -118,7 +154,6 @@
                                 <div class="card-body">
                                     <b> Hari: {{ \Carbon\Carbon::parse(date('Y-m-d'))->locale('id')->isoFormat('dddd, D
                                         MMMM YYYY') }} <br>
-                                        {{-- Koordinat Anda: -6.25669089852724, 106.79641151260287  --}}
                                         Koordinat Anda: <span id="longitudeSpan"></span>, <span id="latitudeSpan"></span>
                                     </b>
                                 </div>
@@ -130,13 +165,17 @@
                                             <h3>Absen Masuk</h3>
                                             @if ($absentToday)
                                                 @if ($absentToday->start == null)
-                                                    @if ($absentToday->status != 'Absen')
-                                                        Anda sedang {{ $absentToday->status }}
-                                                    @else
+                                                    @if ($absentToday->status == 'Absen')
                                                         Belum Absen
+                                                    @elseif ($absentToday->status == 'Meeting Keluar Kota')
+                                                        Meeting Keluar Kota
+                                                    @elseif ($absentToday->status == 'completed')
+                                                        Meeting Selesai
+                                                    @else
+                                                        {{ $absentToday->status }}
                                                     @endif
                                                 @else
-                                                    {{ $absentToday->start }}
+                                                    {{ \Carbon\Carbon::parse($absentToday->start)->format('H:i') }}
                                                 @endif
                                             @else
                                                 Belum Absen
@@ -150,13 +189,17 @@
                                             <h3>Absen Pulang</h3>
                                             @if ($absentToday)
                                                 @if ($absentToday->end == null)
-                                                    @if ($absentToday->status != 'Absen')
-                                                    Anda sedang {{ $absentToday->status }}
+                                                    @if ($absentToday->status == 'Absen')
+                                                        Belum Absen
+                                                    @elseif ($absentToday->status == 'Meeting Keluar Kota')
+                                                        Meeting Keluar Kota
+                                                    @elseif ($absentToday->status == 'completed')
+                                                        Meeting Selesai
+                                                    @else
+                                                        {{ $absentToday->status }}
+                                                    @endif
                                                 @else
-                                                    Belum Absen
-                                                @endif
-                                                @else
-                                                    {{ $absentToday->end }}
+                                                    {{ \Carbon\Carbon::parse($absentToday->end)->format('H:i') }}
                                                 @endif
                                             @else
                                                 Belum Absen
@@ -167,8 +210,58 @@
                                 <div class="col-md-4">
                                     <div class="card bg-info">
                                         <div class="card-body">
-                                            <h3>Koordinat Absen</h3>
-                                            {{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}
+                                            <h3>Jam Kerja</h3>
+                                            @if ($absentToday && $absentToday->start)
+                                                @if ($absentToday->end)
+                                                    @php
+                                                        $start = \Carbon\Carbon::parse($absentToday->start);
+                                                        $end = \Carbon\Carbon::parse($absentToday->end);
+                                                        $workMinutes = $end->diffInMinutes($start);
+                                                        $workHours = floor($workMinutes / 60);
+                                                        $workMinutesRemaining = $workMinutes % 60;
+                                                    @endphp
+                                                    @if ($workHours > 0)
+                                                        {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                                    @else
+                                                        {{ $workMinutesRemaining }} menit
+                                                    @endif
+                                                    @if ($workMinutes >= (auth()->user()->minimum_work_hours * 60))
+                                                        <br><small class="text-success">✓ Minimal terpenuhi</small>
+                                                    @else
+                                                        <br><small class="text-danger">✗ Belum memenuhi minimal</small>
+                                                    @endif
+                                                @else
+                                                    @php
+                                                        $start = \Carbon\Carbon::parse($absentToday->start);
+                                                        $current = \Carbon\Carbon::now();
+                                                        $workMinutes = $current->diffInMinutes($start);
+                                                        $workHours = floor($workMinutes / 60);
+                                                        $workMinutesRemaining = $workMinutes % 60;
+                                                        $requiredMinutes = auth()->user()->minimum_work_hours * 60;
+                                                        $remainingMinutes = $requiredMinutes - $workMinutes;
+                                                    @endphp
+                                                    @if ($workHours > 0)
+                                                        {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                                    @else
+                                                        {{ $workMinutesRemaining }} menit
+                                                    @endif
+                                                    @if ($remainingMinutes > 0)
+                                                        @php
+                                                            $remainingHours = floor($remainingMinutes / 60);
+                                                            $remainingMins = $remainingMinutes % 60;
+                                                        @endphp
+                                                        @if ($remainingHours > 0)
+                                                            <br><small class="text-warning">⏰ Belum bisa pulang: {{ $remainingHours }} jam {{ $remainingMins }} menit lagi</small>
+                                                        @else
+                                                            <br><small class="text-warning">⏰ Belum bisa pulang: {{ $remainingMins }} menit lagi</small>
+                                                        @endif
+                                                    @else
+                                                        <br><small class="text-success">✅ Minimal terpenuhi</small>
+                                                    @endif
+                                                @endif
+                                            @else
+                                                -
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -186,16 +279,7 @@
     </div>
 
     <script>
-        navigator.geolocation.getCurrentPosition(function(position) { 
-            document.getElementById('latitude').value = position.coords.latitude;
-            document.getElementById('longitude').value = position.coords.longitude;
-            document.getElementById('latitudeSpan').innerHTML = position.coords.latitude;
-            document.getElementById('longitudeSpan').innerHTML = position.coords.longitude;
-        });
-    </script>
-
-    <script>
-        const map = L.map('map').setView([{{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}], 13);
+        const map = L.map('map').setView([{{ auth()->user()->office->latitude }}, {{ auth()->user()->office->longitude }}], 13);
         
             const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -203,7 +287,7 @@
             }).addTo(map);
     
             // start marker
-            var marker = L.marker([{{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}])
+            var marker = L.marker([{{ auth()->user()->office->latitude }}, {{ auth()->user()->office->longitude }}])
                             .bindPopup('{{ auth()->user()->office->name }}')
                             .addTo(map);
                     
@@ -214,27 +298,29 @@
                 popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
             });
 
-            var marker2 = L.marker([-6.238456426443423, 106.79836960861903], {
-                icon: iconMarker,
-                draggable: false
-            })
-            .bindPopup('Lokasi Anda')
-            .addTo(map);
+            // get location user
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+                console.log(latitude, longitude);
+                document.getElementById('latitudeSpan').innerHTML = latitude;
+                document.getElementById('longitudeSpan').innerHTML = longitude;
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
 
-            // navigator.geolocation.getCurrentPosition(function(position) {
-            //     var marker3 = L.marker([position.coords.longitude, position.coords.latitude], {
-            //         icon: iconMarker,
-            //         draggable: false
-            //     })
-            //     .bindPopup('Lokasi Anda')
-            //     .addTo(map);
-            // });
+                var marker2 = L.marker([latitude, longitude], {
+                    icon: iconMarker,
+                    draggable: false
+                })
+                .bindPopup('Lokasi Anda')
+                .addTo(map);
+            });
 
             // end marker
 
             // start circle
-            var circle = L.circle([{{ auth()->user()->office->longitude }}, {{ auth()->user()->office->latitude }}], {
-                color: 'red'
+            var circle = L.circle([{{ auth()->user()->office->latitude }}, {{ auth()->user()->office->longitude }}], {
+                color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.5,
                 radius: {{ auth()->user()->office->radius * 2 }}

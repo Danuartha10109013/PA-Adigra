@@ -173,9 +173,9 @@
                                 <th>Karyawan</th>
                                 <th>Tanggal</th>
                                 <th>Kantor</th>
-                                <th>Shift</th>
                                 <th>Jam Masuk</th>
                                 <th>Jam Pulang</th>
+                                <th>Jam Kerja</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
@@ -206,13 +206,40 @@
                                         {{ $absent->office->name }}
                                     @endif
                                 </td>
+                                <td>{{ $absent->start ? \Carbon\Carbon::parse($absent->start)->format('H:i') : '-' }}</td>
+                                <td>{{ $absent->end ? \Carbon\Carbon::parse($absent->end)->format('H:i') : '-' }}</td>
                                 <td>
-                                    @if ($absent->shift_id)
-                                        {{ $absent->shift->name }}
+                                    @if ($absent->start && $absent->end)
+                                        @php
+                                            $start = \Carbon\Carbon::parse($absent->start);
+                                            $end = \Carbon\Carbon::parse($absent->end);
+                                            $workMinutes = $end->diffInMinutes($start);
+                                            $workHours = floor($workMinutes / 60);
+                                            $workMinutesRemaining = $workMinutes % 60;
+                                        @endphp
+                                        @if ($workHours > 0)
+                                            {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                        @else
+                                            {{ $workMinutesRemaining }} menit
+                                        @endif
+                                    @elseif ($absent->start && !$absent->end)
+                                        @php
+                                            $start = \Carbon\Carbon::parse($absent->start);
+                                            $current = \Carbon\Carbon::now();
+                                            $workMinutes = $current->diffInMinutes($start);
+                                            $workHours = floor($workMinutes / 60);
+                                            $workMinutesRemaining = $workMinutes % 60;
+                                        @endphp
+                                        @if ($workHours > 0)
+                                            {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                                        @else
+                                            {{ $workMinutesRemaining }} menit
+                                        @endif
+                                        <br><small class="text-info">(Sedang bekerja)</small>
+                                    @else
+                                        -
                                     @endif
                                 </td>
-                                <td>{{ $absent->start }}</td>
-                                <td>{{ $absent->end }}</td>
                                 <td>{{ $absent->status }}</td>
                                 <td>
                                     <a href="/backoffice/absent/{{ $absent->id }}/detail" class="btn btn-sm btn-primary">

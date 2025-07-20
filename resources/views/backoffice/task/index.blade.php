@@ -191,10 +191,11 @@
                                             <a href="/backoffice/task/{{ $task->id }}/preview" class="badge badge-light" target="_blank">
                                                 <i class="fa fa-eye"></i>
                                             </a>
-                                            {{ $task->filename }} | 
+                                            {{ $task->filename }} 
+                                            <!-- | 
                                             <button class="badge badge-danger" data-toggle="modal" data-target="#delete-file-{{ $task->id }}" title="Hapus">
                                                 <i class="fa fa-trash"></i>
-                                            </button>
+                                            </button> -->
                                         @else
                                             <span class="badge badge-light">Tidak ada berkas</span>
                                         @endif

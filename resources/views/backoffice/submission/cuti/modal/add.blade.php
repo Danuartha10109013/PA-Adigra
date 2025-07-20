@@ -13,6 +13,18 @@
 
                     <div class="card card-outline card-primary">
                         <div class="card-body">
+                            @php
+                                $tahunIni = date('Y');
+                                $userQuota = \App\Models\LeaveQuota::where('user_id', auth()->id())->where('year', $tahunIni)->first();
+                                $sisaCuti = $userQuota ? ($userQuota->quota - $userQuota->used) : 30;
+                            @endphp
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Jatah Cuti Tahun {{ $tahunIni }}:</strong> 
+                                {{ $userQuota ? $userQuota->quota : 30 }} hari, 
+                                <strong>Sisa:</strong> {{ $sisaCuti }} hari
+                            </div>
+                            
                             <div class="form-group">
                                 <label>Mulai Cuti <span class="text-danger">*</span></label>
                                 <input type="date"  name="start_date" class="form-control @if($errors->has('start_date')) is-invalid @endif" placeholder="Mulai Cuti" value="{{ old('start_date') }}"

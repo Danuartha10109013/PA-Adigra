@@ -3,6 +3,7 @@
 namespace App\Http\Repository;
 
 use App\Models\Office;
+use App\Models\Shift;
 use Illuminate\Support\Facades\Storage;
 
 class OfficeRepository

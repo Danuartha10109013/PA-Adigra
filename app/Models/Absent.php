@@ -2,24 +2,67 @@
 
 namespace App\Models;
 
+use App\Services\AttendanceSummaryService;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 class Absent extends Model
 {
-    public function user(): BelongsTo
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'office_id',
+        'start',
+        'end',
+        'latitude',
+        'longitude',
+        'status',
+        'description',
+        'date'
+    ];
+
+    protected $casts = [
+        'date' => 'date',
+        'start' => 'datetime',
+        'end' => 'datetime'
+    ];
+
+    protected static function booted()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        static::created(function ($absent) {
+            try {
+                $service = app(AttendanceSummaryService::class);
+                $service->createFromAbsent($absent);
+            } catch (\Exception $e) {
+                Log::error('Error creating attendance summary: ' . $e->getMessage());
+            }
+        });
+
+        static::updated(function ($absent) {
+            try {
+                $service = app(AttendanceSummaryService::class);
+                $service->createFromAbsent($absent);
+            } catch (\Exception $e) {
+                Log::error('Error updating attendance summary: ' . $e->getMessage());
+            }
+        });
     }
 
-    public function shift(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(Shift::class, 'shift_id', 'id');
+        return $this->belongsTo(User::class);
     }
 
-    public function office(): BelongsTo
+    public function office()
     {
-        return $this->belongsTo(Office::class, 'office_id', 'id');
+        return $this->belongsTo(Office::class);
+    }
+
+    public function submission()
+    {
+        return $this->belongsTo(Submission::class);
     }
 
     // set createdAt to format

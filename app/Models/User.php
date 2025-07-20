@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'minimum_work_hours',
     ];
 
     /**
@@ -71,5 +73,78 @@ class User extends Authenticatable
     public function assesments(): HasMany
     {
         return $this->hasMany(Assesment::class, 'user_id', 'id');
+    }
+
+    /**
+     * Hitung jam kerja hari ini
+     */
+    public function getWorkHoursToday()
+    {
+        $absentToday = $this->absents()
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->where('status', 'Absen')
+            ->first();
+
+        if (!$absentToday || !$absentToday->start || !$absentToday->end) {
+            return 0;
+        }
+
+        $start = Carbon::parse($absentToday->start);
+        $end = Carbon::parse($absentToday->end);
+        
+        return $end->diffInMinutes($start);
+    }
+
+    /**
+     * Cek apakah sudah memenuhi jam kerja minimal
+     */
+    public function hasMetMinimumWorkHours()
+    {
+        $workMinutes = $this->getWorkHoursToday();
+        $requiredMinutes = $this->minimum_work_hours * 60;
+        return $workMinutes >= $requiredMinutes;
+    }
+
+    /**
+     * Dapatkan sisa jam kerja yang diperlukan
+     */
+    public function getRemainingWorkHours()
+    {
+        $workMinutes = $this->getWorkHoursToday();
+        $requiredMinutes = $this->minimum_work_hours * 60;
+        $remaining = $requiredMinutes - $workMinutes;
+        return max(0, $remaining);
+    }
+
+    /**
+     * Dapatkan format jam kerja yang sudah bekerja
+     */
+    public function getWorkHoursFormatted()
+    {
+        $workMinutes = $this->getWorkHoursToday();
+        $workHours = floor($workMinutes / 60);
+        $workMinutesRemaining = $workMinutes % 60;
+        
+        if ($workHours > 0) {
+            return "{$workHours} jam {$workMinutesRemaining} menit";
+        } else {
+            return "{$workMinutesRemaining} menit";
+        }
+    }
+
+    /**
+     * Dapatkan format sisa jam kerja yang diperlukan
+     */
+    public function getRemainingWorkHoursFormatted()
+    {
+        $remainingMinutes = $this->getRemainingWorkHours();
+        $remainingHours = floor($remainingMinutes / 60);
+        $remainingMins = $remainingMinutes % 60;
+        
+        if ($remainingHours > 0) {
+            return "{$remainingHours} jam {$remainingMins} menit";
+        } else {
+            return "{$remainingMins} menit";
+        }
     }
 }

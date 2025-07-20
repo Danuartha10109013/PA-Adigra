@@ -4,7 +4,9 @@ namespace App\Http\Repository;
 
 use App\Models\Absent;
 use App\Models\Submission;
-use Illuminate\Support\Facades\Auth;
+use App\Models\LeaveQuota;
+    use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Facades\Auth;
 
 class SubmissionRepository
 {
@@ -71,6 +73,30 @@ class SubmissionRepository
             $submission->status = "Disetujui";
             $submission->save();
 
+            // === LOGIKA UPDATE JATAH CUTI TAHUNAN ===
+            if ($submission->type == 'cuti') {
+                $year = date('Y', strtotime($submission->start_date));
+                $leaveQuota = LeaveQuota::firstOrCreate(
+                    [
+                        'user_id' => $submission->user_id,
+                        'year' => $year,
+                    ],
+                    [
+                        'quota' => 30, // default 30 hari per tahun
+                        'used' => 0,
+                    ]
+                );
+                
+                // Cek apakah masih ada jatah cuti tersisa
+                if (($leaveQuota->used + $submission->total_day) > $leaveQuota->quota) {
+                    throw new \Exception('Jatah cuti tahunan tidak mencukupi');
+                }
+                
+                $leaveQuota->used += $submission->total_day;
+                $leaveQuota->save();
+            }
+            // === END LOGIKA ===
+
             // insert to absent foreach
             $start = new \DateTime($submission->start_date);
             $end = new \DateTime($submission->end_date);
@@ -131,29 +157,52 @@ class SubmissionRepository
         }
     }
 
+
     public function storeNonTypeCuti($data)
     {
         try {
+            // Start by creating a new Submission instance
             $submission = new Submission();
             $submission->user_id = Auth::user()->id;
             $submission->start_date = $data['start_date'];
             $submission->end_date = $data['end_date'];
+    
+            // Calculate the number of days for the leave
             $start = new \DateTime($submission->start_date);
             $end = new \DateTime($submission->end_date);
             $interval = $start->diff($end);
             $days = $interval->format('%a');
             $total_hari = $days + 1;
             $submission->total_day = $total_hari;
+    
+            // Set other properties
             $submission->type = $data['type'];
             $submission->description = $data['description'];
             $submission->status = "Pengajuan";
+    
+            // Handle file upload for Surat Izin/Sakit using Laravel's Storage facade
+            if ($data->hasFile('file')) {
+                $file = $data->file('file');
+                
+                // Validate the file (optional, you can add more validation)
+                $validatedData = $data->validate([
+                    'file' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240' // Example validation
+                ]);
+                
+                // Store the file in the 'surat_izin_sakit' folder in the public disk
+                $filePath = $file->store('uploads/surat_izin_sakit', 'public');
+                $submission->bukti = $filePath;
+            }
+    
+            // Save the submission
             $submission->save();
-
+    
             return $submission;
         } catch (\Throwable $th) {
             throw $th;
         }
     }
+    
 
     public function update($data, $id)
     {

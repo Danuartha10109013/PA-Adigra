@@ -172,7 +172,8 @@
                   @if ($category == null)
                     <th>Jam Masuk</th>
                     <th>Jam Pulang</th>
-                    <th>Shift</th>
+                    <th>Jam Kerja</th>
+                    <th>Status Jam Kerja</th>
                   @endif
                   <th>Kantor</th>
                 @endif
@@ -205,13 +206,68 @@
                     @endif
                   </td>
                   @if ($category == null)
-                    <td>{{ $absen->start }}</td>
-                    <td>{{ $absen->end }}</td>
+                    <td>{{ $absen->start ? \Carbon\Carbon::parse($absen->start)->format('H:i') : '-' }}</td>
+                    <td>{{ $absen->end ? \Carbon\Carbon::parse($absen->end)->format('H:i') : '-' }}</td>
                     <td>
-                      @if ($absen->shift_id == null)
-                        -
+                      @if ($absen->start && $absen->end)
+                        @php
+                          $start = \Carbon\Carbon::parse($absen->start);
+                          $end = \Carbon\Carbon::parse($absen->end);
+                          $workMinutes = $end->diffInMinutes($start);
+                          $workHours = floor($workMinutes / 60);
+                          $workMinutesRemaining = $workMinutes % 60;
+                        @endphp
+                        @if ($workHours > 0)
+                          {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                        @else
+                          {{ $workMinutesRemaining }} menit
+                        @endif
+                      @elseif ($absen->start && !$absen->end)
+                        @php
+                          $start = \Carbon\Carbon::parse($absen->start);
+                          $current = \Carbon\Carbon::now();
+                          $workMinutes = $current->diffInMinutes($start);
+                          $workHours = floor($workMinutes / 60);
+                          $workMinutesRemaining = $workMinutes % 60;
+                        @endphp
+                        @if ($workHours > 0)
+                          {{ $workHours }} jam {{ $workMinutesRemaining }} menit
+                        @else
+                          {{ $workMinutesRemaining }} menit
+                        @endif
+                        <br><small class="text-info">(Sedang bekerja)</small>
                       @else
-                        {{ $absen->shift->name }}
+                        -
+                      @endif
+                    </td>
+                    <td>
+                      @if ($absen->start && $absen->end)
+                        @php
+                          $start = \Carbon\Carbon::parse($absen->start);
+                          $end = \Carbon\Carbon::parse($absen->end);
+                          $workMinutes = $end->diffInMinutes($start);
+                          $requiredMinutes = $absen->user ? ($absen->user->minimum_work_hours * 60) : 300;
+                        @endphp
+                        @if ($workMinutes >= $requiredMinutes)
+                          <span class="badge badge-success">✅ Minimal terpenuhi</span>
+                        @else
+                          <span class="badge badge-warning">⚠️ Belum memenuhi minimal</span>
+                        @endif
+                      @elseif ($absen->start && !$absen->end)
+                        @php
+                          $start = \Carbon\Carbon::parse($absen->start);
+                          $current = \Carbon\Carbon::now();
+                          $workMinutes = $current->diffInMinutes($start);
+                          $requiredMinutes = $absen->user ? ($absen->user->minimum_work_hours * 60) : 300;
+                          $remainingMinutes = $requiredMinutes - $workMinutes;
+                        @endphp
+                        @if ($remainingMinutes > 0)
+                          <span class="badge badge-warning">⏰ Belum cukup</span>
+                        @else
+                          <span class="badge badge-success">✅ Minimal terpenuhi</span>
+                        @endif
+                      @else
+                        <span class="badge badge-secondary">-</span>
                       @endif
                     </td>
                   @endif

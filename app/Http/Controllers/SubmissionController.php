@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Repository\SubmissionRepository;
 use Illuminate\Http\Request;
+use App\Models\LeaveQuota;
+use Illuminate\Support\Facades\Auth;
 
 class SubmissionController extends Controller
 {
@@ -35,6 +37,32 @@ class SubmissionController extends Controller
 
     public function storeCuti(Request $request)
     {
+        // Validasi jatah cuti tahunan
+        $year = date('Y', strtotime($request->start_date));
+        $userQuota = \App\Models\LeaveQuota::firstOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'year' => $year,
+            ],
+            [
+                'quota' => 30,
+                'used' => 0,
+            ]
+        );
+
+        // Hitung total hari cuti yang diajukan
+        $start = new \DateTime($request->start_date);
+        $end = new \DateTime($request->end_date);
+        $interval = $start->diff($end);
+        $totalDays = $interval->format('%a') + 1;
+
+        // Cek apakah masih ada jatah cuti tersisa
+        if (($userQuota->used + $totalDays) > $userQuota->quota) {
+            $sisaCuti = $userQuota->quota - $userQuota->used;
+            return redirect('/backoffice/submission/cuti')
+                ->with('error', "Jatah cuti tahunan tidak mencukupi. Sisa jatah cuti: {$sisaCuti} hari, yang diajukan: {$totalDays} hari");
+        }
+
         $submission = $this->submissionRepository->storeCuti($request);
         return redirect('/backoffice/submission/cuti')->with('success', 'Cuti telah ditambahkan');
     }

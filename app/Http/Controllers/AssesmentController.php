@@ -30,6 +30,52 @@ class AssesmentController extends Controller
     }
 
     public function result()
+{
+    // 1. ambil data
+    $karyawan = $this->userRepository->getAllNonAdmin();
+    $kriteria = $this->criteriaRepository->getAll();
+    $nilai = $this->assesmentRepository->getAll();
+
+    // 2. normalisasi nilai
+    $normalisasi = [];
+    foreach ($kriteria as $k) {
+        $max = Assesment::where('criteria_id', $k->id)->max('score');
+        $min = Assesment::where('criteria_id', $k->id)->min('score');
+
+        foreach ($nilai->where('criteria_id', $k->id) as $n) {
+            $r = ($k->type == 'benefit') 
+                ? ($max > 0 ? $n->score / $max : 0)
+                : ($n->score > 0 ? $min / $n->score : 0);
+
+            $normalisasi[$n->user_id][$k->id] = $r;
+        }
+    }
+
+    // 3. perhitungan nilai preferensi
+    $hasil = [];
+    foreach ($karyawan as $k) {
+        $total = 0;
+        $normalisasiUser = $normalisasi[$k->id] ?? [];
+
+        foreach ($kriteria as $kri) {
+            $nilaiNormalisasi = $normalisasiUser[$kri->id] ?? 0;
+            $total += $kri->weight * $nilaiNormalisasi;
+        }
+
+        $hasil[$k->id] = [
+            'user' => $k,
+            'normalisasi' => $normalisasiUser,
+            'total' => $total,
+        ];
+    }
+
+    // 4. sorting
+    usort($hasil, fn ($a, $b) => $b['total'] <=> $a['total']);
+
+    return view('backoffice.assesment-data.assesment.result', compact(['hasil', 'kriteria']));
+}
+
+    public function resultSalah()
     {
         // 1. ambil data
         $karyawan = $this->userRepository->getAllNonAdmin();

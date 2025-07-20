@@ -3,22 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Repository\AbsentRepository;
-use App\Http\Repository\ShiftRepository;
 use App\Http\Repository\UserRepository;
 use App\Models\Absent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AbsentController extends Controller
 {
     private $absentRepository;
-    private $shiftRepository;
     private $userRepository;
 
-    public function __construct(AbsentRepository $absentRepository, ShiftRepository $shiftRepository, UserRepository $userRepository)
+    public function __construct(AbsentRepository $absentRepository, UserRepository $userRepository)
     {
         $this->absentRepository = $absentRepository;
-        $this->shiftRepository = $shiftRepository;
         $this->userRepository = $userRepository;
     }
 
@@ -39,16 +38,34 @@ class AbsentController extends Controller
             $cuti = $absents->where('status', 'cuti')->count();
         }
 
-        return view('backoffice..absent.index', compact(['absents', 'bulan', 'tahun', 'hadir', 'sakit', 'izin', 'cuti']));
+        return view('backoffice.absent.index', compact(['absents', 'bulan', 'tahun', 'hadir', 'sakit', 'izin', 'cuti']));
     }
 
     // modul karyawan
     public function create()
     {
-        $shifts = $this->shiftRepository->getAll();
         $user = $this->userRepository->getByAuth();
         $absentToday = $this->absentRepository->getAbsenTodayByUserId();
-        return view('backoffice.karyawan.absent.index', compact('shifts', 'user', 'absentToday'));
+        
+        // Cek apakah user sedang dalam meeting keluar kota
+        $meetingOutOfTown = \App\Models\Meet::whereHas('participants', function($query) {
+                $query->where('user_id', Auth::user()->id);
+            })
+            ->where('category', 'out_of_town')
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->first();
+        
+        // Jika sedang meeting keluar kota, buat dummy absentToday
+        if ($meetingOutOfTown && !$absentToday) {
+            $absentToday = (object) [
+                'status' => 'Meeting Keluar Kota',
+                'start' => null,
+                'end' => null
+            ];
+        }
+        
+        return view('backoffice.karyawan.absent.index', compact('user', 'absentToday'));
     }
 
     public function self(Request $request)
@@ -74,22 +91,58 @@ class AbsentController extends Controller
 
     public function store(Request $request)
     {
-        $absentToday = Absent::where('user_id', Auth::user()->id)->whereDate('created_at', now()->format('Y-m-d'))->first();
+        $absentToday = Absent::where('user_id', Auth::user()->id)
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->where(function($query) {
+                $query->where('description', 'not like', 'Meeting keluar kota: %')
+                      ->orWhereNull('description');
+            })
+            ->first();
 
         $user = $this->userRepository->getByAuth();
 
-        $earthRadius = 6371;
+        // Cek apakah user sedang meeting keluar kota yang belum selesai atau dibatalkan
+        $meetingOutOfTown = \App\Models\Meet::whereHas('participants', function($query) {
+                $query->where('user_id', Auth::user()->id);
+            })
+            ->where('category', 'out_of_town')
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->first();
 
-        // $longitudeUser = -6.25669089852724;
-        // $latitudeUser = 106.79641151260287;
+        if ($meetingOutOfTown) {
+            return redirect('/backoffice/absen/create')
+                ->with('error', '🚫 Anda sedang dalam meeting keluar kota yang belum selesai atau dibatalkan: ' . $meetingOutOfTown->title);
+        }
+
+        // Cek apakah ada record absensi meeting yang sudah selesai, jika ada hapus
+        $completedMeetingAbsent = Absent::where('user_id', Auth::user()->id)
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->where('description', 'like', 'Meeting keluar kota: %')
+            ->where('status', 'completed')
+            ->first();
+
+        if ($completedMeetingAbsent) {
+            $completedMeetingAbsent->delete();
+        }
+
+        $earthRadius = 6371;
         $longitudeUser = $request->longitude;
         $latitudeUser = $request->latitude;
 
-        // dd($longitudeUser, $latitudeUser);
-
         $longitudeOffice = $user->office->longitude;
         $latitudeOffice = $user->office->latitude;
-        $radiusOffice = $user->office->radius / 1000;
+        $radiusOffice = $user->office->radius / 1000; // Convert meter to km
+
+        // Debug logging
+        Log::info('Absen Debug Info', [
+            'user_coords' => [$latitudeUser, $longitudeUser],
+            'office_coords' => [$latitudeOffice, $longitudeOffice],
+            'office_radius_meter' => $user->office->radius,
+            'office_radius_km' => $radiusOffice,
+            'user_id' => Auth::user()->id,
+            'office_id' => $user->office_id
+        ]);
 
         // Menghitung perbedaan koordinat
         $latFrom = deg2rad($latitudeUser);
@@ -110,25 +163,57 @@ class AbsentController extends Controller
         // Menghitung jarak
         $distance = $earthRadius * $c;
 
-        // radius
-        if ($distance <= $radiusOffice) {
-            if ($absentToday) {
-                if ($absentToday->end == null) {
-                    if (now()->format('H:i:s') < $absentToday->shift->end) {
-                        return redirect('/backoffice/absen/create')->with('error', 'Anda belum waktunya pulang');
-                    } else {
-                        $absentToday->end = now();
-                        $absentToday->save();
-                        return redirect('/backoffice/absen/create')->with('success', 'Absen pulang');
-                    }
+        // Debug logging jarak
+        Log::info('Distance calculation', [
+            'calculated_distance_km' => $distance,
+            'office_radius_km' => $radiusOffice,
+            'is_within_radius' => $distance <= $radiusOffice
+        ]);
+
+        // Validasi radius
+        if ($distance > $radiusOffice) {
+            return redirect('/backoffice/absen/create')
+                ->with('error', "📍 Anda tidak berada di radius lokasi kerja. Jarak: " . round($distance * 1000, 0) . " meter, Radius kantor: " . $user->office->radius . " meter");
+        }
+
+        // Cek apakah ada record absensi normal yang sudah ada
+        $existingAbsent = Absent::where('user_id', Auth::user()->id)
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->where('status', 'Absen')
+            ->first();
+
+        // Jika sudah ada absen masuk, cek apakah bisa pulang
+        if ($existingAbsent && $existingAbsent->start && !$existingAbsent->end) {
+            // Cek apakah sudah memenuhi jam kerja minimal
+            $startTime = Carbon::parse($existingAbsent->start);
+            $currentTime = Carbon::now();
+            $workMinutes = $currentTime->diffInMinutes($startTime);
+            $requiredMinutes = $user->minimum_work_hours * 60;
+            
+            if ($workMinutes < $requiredMinutes) {
+                $remainingMinutes = $requiredMinutes - $workMinutes;
+                $remainingHours = floor($remainingMinutes / 60);
+                $remainingMins = $remainingMinutes % 60;
+                
+                if ($remainingHours > 0) {
+                    $remainingText = "{$remainingHours} jam {$remainingMins} menit";
                 } else {
-                    return redirect('/backoffice/absen/create')->with('error', 'Anda sudah absen pulang');
+                    $remainingText = "{$remainingMins} menit";
                 }
+                
+                return redirect('/backoffice/absen/create')
+                    ->with('error', "⏰ Anda belum bisa pulang. Masih perlu bekerja {$remainingText} lagi untuk memenuhi jam kerja minimal.");
+            } else {
+                $existingAbsent->end = now();
+                $existingAbsent->save();
+                return redirect('/backoffice/absen/create')->with('success', '✅ Absen pulang berhasil! Anda sudah memenuhi jam kerja minimal.');
             }
-    
+        }
+
+        // Jika belum ada absen masuk, buat absen masuk baru
+        if (!$existingAbsent) {
             $absent = new Absent();
             $absent->user_id = Auth::user()->id;
-            $absent->shift_id = $request->shift_id;
             $absent->office_id = Auth::user()->office_id;
             $absent->start = now();
             $absent->latitude = $latitudeUser;
@@ -136,36 +221,8 @@ class AbsentController extends Controller
             $absent->status = "Absen";
             $absent->date = now()->format('Y-m-d');
             $absent->save();
-            return redirect('/backoffice/absen/create')->with('success', 'Absen masuk');
-        }   else {
-            return redirect('/backoffice/absen/create')->with('error', 'Anda tidak berada di radius lokasi kerja');
+            return redirect('/backoffice/absen/create')->with('success', '✅ Absen masuk berhasil! Silakan bekerja minimal ' . $user->minimum_work_hours . ' jam.');
         }
-
-        // if ($absentToday) {
-        //     if ($absentToday->end == null) {
-        //         if (now()->format('H:i:s') < $absentToday->shift->end) {
-        //             return redirect('/backoffice/absen/create')->with('error', 'Anda belum waktunya pulang');
-        //         } else {
-        //             $absentToday->end = now();
-        //             $absentToday->save();
-        //             return redirect('/backoffice/absen/create')->with('success', 'Absen pulang');
-        //         }
-        //     } else {
-        //         return redirect('/backoffice/absen/create')->with('error', 'Anda sudah absen pulang');
-        //     }
-        // }
-
-        // $absent = new Absent();
-        // $absent->user_id = Auth::user()->id;
-        // $absent->shift_id = $request->shift_id;
-        // $absent->office_id = Auth::user()->office_id;
-        // $absent->start = now();
-        // $absent->longitude = "-6.25669089852724";
-        // $absent->latitude = "106.79641151260287";
-        // $absent->status = "Absen";
-        // $absent->date = now()->format('Y-m-d');
-        // $absent->save();
-        // return redirect('/backoffice/absen/create')->with('success', 'Absen masuk');
     }
 
     public function detail($id)
