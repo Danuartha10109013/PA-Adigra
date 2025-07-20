@@ -40,7 +40,15 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                {{-- <div class="col-md-3">
+                    <label class="form-label">Jenis Absen</label>
+                    <select class="form-select" name="jenis_absen">
+                        <option value="">Semua</option>
+                        <option value="wfo" {{ request('jenis_absen') == 'wfo' ? 'selected' : '' }}>WFO</option>
+                        <option value="wfh" {{ request('jenis_absen') == 'wfh' ? 'selected' : '' }}>WFH</option>
+                    </select>
+                </div> --}}
+                <div class="col-md-12 d-flex align-items-end justify-content-end">
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="fas fa-search"></i> Filter
                     </button>
@@ -61,14 +69,15 @@
                         <tr>
                             <th rowspan="2" class="align-middle">No</th>
                             <th rowspan="2" class="align-middle">Nama Pegawai</th>
-                            <th colspan="2" class="text-center">Kehadiran</th>
+                            <th colspan="3" class="text-center">Kehadiran</th>
                             <th colspan="2" class="text-center">Keterlambatan</th>
                             <th colspan="2" class="text-center">Pulang Awal</th>
                             <th colspan="2" class="text-center">Tidak Masuk</th>
                             <th colspan="2" class="text-center">Cuti</th>
                         </tr>
                         <tr>
-                            <th class="text-center">Hadir</th>
+                            <th class="text-center">WFO</th>
+                            <th class="text-center">WFH</th>
                             <th class="text-center">%</th>
                             <th class="text-center">Jumlah</th>
                             <th class="text-center">%</th>
@@ -85,9 +94,10 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $data['user']->name }}</td>
-                                <td class="text-center">{{ $data['total_days'] - $data['total_absent'] - $data['total_leave'] }}</td>
+                                <td class="text-center">{{ $data['total_wfo'] }}</td>
+                                <td class="text-center">{{ $data['total_wfh'] }}</td>
                                 <td class="text-center">
-                                    {{ number_format(($data['total_days'] - $data['total_absent'] - $data['total_leave']) / $data['total_days'] * 100, 1) }}%
+                                    {{ number_format(($data['total_wfo'] + $data['total_wfh']) / $data['total_days'] * 100, 1) }}%
                                 </td>
                                 <td class="text-center">{{ $data['total_late'] }}</td>
                                 <td class="text-center">
@@ -108,7 +118,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="text-center">Tidak ada data</td>
+                                <td colspan="13" class="text-center">Tidak ada data</td>
                             </tr>
                         @endforelse
                     </tbody>

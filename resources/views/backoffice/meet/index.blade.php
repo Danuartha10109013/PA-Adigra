@@ -29,7 +29,7 @@
 
                     <div class="card-tools">
                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#tambah">
-                            <i class="fas fa-plus"></i> Tambah Meeting
+                            <i class="fas fa-plus"></i> {{Auth::user()->role_id == 1 ? 'Tambah' : 'Ajukan'}} Meeting
                         </button>
                         <button type="button" class="btn btn-tool btn-sm" data-card-widget="collapse"
                             data-toggle="tooltip" title="Collapse">
@@ -67,6 +67,7 @@
                                 <th>Waktu</th>
                                 <th>Kategori</th>
                                 <th>Status</th>
+                                <th>Status Pengajuan</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -97,20 +98,108 @@
                                     <span class="badge badge-success">Selesai</span>
                                 @endif
                             </td>
+                            <td>
+                                @if($meet->acc == 1)
+                                    <span class="badge badge-success">Diterima</span>
+                                @elseif($meet->acc == 2)
+                                    <span class="badge badge-danger">Ditolak</span>
+                                @else
+                                    <span class="badge badge-warning">Pending</span>
+                                @endif
+                            </td>
                                 <td>
-                                    @if($meet->status == 'pending')
-                                        <form action="{{ route('meet.complete', $meet->id) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Apakah meeting ini sudah selesai?')" title="Selesai">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
+                                    @if($meet->acc == 0 && $meet->status != 'completed' && Auth::user()->role_id == 1)
+                                        <!-- Tombol Terima -->
+                                        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#acceptModal{{ $meet->id }}" title="Terima">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+
+                                        <!-- Tombol Tolak -->
+                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#rejectModal{{ $meet->id }}" title="Tolak">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+
+                                        <!-- Modal Konfirmasi Terima -->
+                                        <div class="modal fade" id="acceptModal{{ $meet->id }}" tabindex="-1" aria-labelledby="acceptModalLabel{{ $meet->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-success text-white">
+                                                        <h5 class="modal-title" id="acceptModalLabel{{ $meet->id }}">Konfirmasi Terima</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Apakah Anda yakin ingin <strong>menerima</strong> pertemuan ini?</p>
+                                                        <p><strong>Judul:</strong> {{ $meet->title }}</p>
+                                                        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($meet->date)->translatedFormat('l, d F Y') }}</p>
+                                                        <p><strong>Waktu:</strong> {{ $meet->start }} - {{ $meet->end }}</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <form action="{{ route('meet.accept', $meet->id) }}" method="POST" style="display: inline;">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-success">
+                                                                <i class="fas fa-check"></i> Ya, Terima
+                                                            </button>
+                                                        </form>
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                            <i class="fas fa-times"></i> Batal
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Modal Konfirmasi Tolak -->
+                                        <div class="modal fade" id="rejectModal{{ $meet->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $meet->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title" id="rejectModalLabel{{ $meet->id }}">Konfirmasi Tolak</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Apakah Anda yakin ingin <strong>menolak</strong> pertemuan ini?</p>
+                                                        <p><strong>Judul:</strong> {{ $meet->title }}</p>
+                                                        <p><strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($meet->date)->translatedFormat('l, d F Y') }}</p>
+                                                        <p><strong>Waktu:</strong> {{ $meet->start }} - {{ $meet->end }}</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <form action="{{ route('meet.reject', $meet->id) }}" method="POST" style="display: inline;">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <i class="fas fa-times"></i> Ya, Tolak
+                                                            </button>
+                                                        </form>
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                            <i class="fas fa-arrow-left"></i> Batal
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+  
+
+                                        ||
+                                    @endif
+                                    @if($meet->status != 'pending' && $meet->acc == 1)
+                                        
                                         <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#notulensi{{ $meet->id }}" title="Notulensi">
                                             <i class="fas fa-file-alt"></i>
                                         </button>
                                     @endif
                                     
                                     @if(Auth::user()->role_id == 1)
+                                        @if ($meet->acc == 1)
+                                        <form action="{{ route('meet.complete', $meet->id) }}" method="POST" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Apakah meeting ini sudah selesai?')" title="Selesai">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        @endif
                                         @if($meet->status !== 'completed')
 
                                             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#edit-{{ $meet->id }}" title="Ubah">
@@ -132,6 +221,7 @@
                     @include('backoffice.meet.modal.edit')
                     @include('backoffice.meet.modal.delete')
                     @include('backoffice.meet.modal.notulensi')
+                    
                     @endforeach
 
                 </div>

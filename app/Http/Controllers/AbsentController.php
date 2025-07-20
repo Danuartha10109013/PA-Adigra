@@ -8,6 +8,7 @@ use App\Models\Absent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class AbsentController extends Controller
@@ -91,6 +92,64 @@ class AbsentController extends Controller
 
     public function store(Request $request)
     {
+        $jenisAbsen = $request->jenis_absen;
+        $user = $this->userRepository->getByAuth();
+
+        if ($jenisAbsen === 'WFH') {
+            // Cek apakah sudah absen masuk hari ini
+            $existingAbsent = Absent::where('user_id', Auth::user()->id)
+                ->whereDate('date', now()->format('Y-m-d'))
+                ->where('status', 'WFH')
+                ->first();
+
+            // Jika sudah absen masuk, cek absen pulang
+            if ($existingAbsent && $existingAbsent->start && !$existingAbsent->end) {
+                $startTime = Carbon::parse($existingAbsent->start);
+                $currentTime = Carbon::now();
+                $workMinutes = $currentTime->diffInMinutes($startTime);
+                $requiredMinutes = $user->minimum_work_hours * 60;
+                if ($workMinutes < $requiredMinutes) {
+                    $remainingMinutes = $requiredMinutes - $workMinutes;
+                    $remainingHours = floor($remainingMinutes / 60);
+                    $remainingMins = $remainingMinutes % 60;
+                    $remainingText = $remainingHours > 0 ? "{$remainingHours} jam {$remainingMins} menit" : "{$remainingMins} menit";
+                    return redirect('/backoffice/absen/create')
+                        ->with('error', "⏰ Anda belum bisa pulang. Masih perlu bekerja {$remainingText} lagi untuk memenuhi jam kerja minimal.");
+                } else {
+                    $existingAbsent->end = now();
+                    $existingAbsent->save();
+                    return redirect('/backoffice/absen/create')->with('success', '✅ Absen pulang WFH berhasil! Anda sudah memenuhi jam kerja minimal.');
+                }
+            }
+            // Jika belum absen masuk, proses absen masuk WFH
+            if (!$existingAbsent) {
+                // Simpan foto base64 ke file
+                $buktiFotoBase64 = $request->bukti_foto;
+                $buktiFotoPath = null;
+                if ($buktiFotoBase64) {
+                    $fotoData = base64_decode(preg_replace('#^data:image/\\w+;base64,#i', '', $buktiFotoBase64));
+                    $fileName = 'wfh_' . Auth::user()->id . '_' . date('Ymd_His') . '.png';
+                    $filePath = 'absensi/wfh/' . $fileName;
+                    Storage::disk('public')->put($filePath, $fotoData);
+                    $buktiFotoPath = $filePath;
+                }
+                $absent = new Absent();
+                $absent->user_id = Auth::user()->id;
+                $absent->office_id = Auth::user()->office_id;
+                $absent->start = now();
+                $absent->latitude = $request->latitude;
+                $absent->longitude = $request->longitude;
+                $absent->status = "wfh";
+                $absent->date = now()->format('Y-m-d');
+                $absent->bukti_foto = $buktiFotoPath;
+                $absent->save();
+                return redirect('/backoffice/absen/create')->with('success', '✅ Absen masuk WFH berhasil! Silakan bekerja minimal ' . $user->minimum_work_hours . ' jam.');
+            }
+            // fallback
+            return redirect('/backoffice/absen/create')->with('error', 'Terjadi kesalahan absen WFH.');
+        }
+
+        // --- LOGIKA LAMA UNTUK WFO ---
         $absentToday = Absent::where('user_id', Auth::user()->id)
             ->whereDate('date', now()->format('Y-m-d'))
             ->where(function($query) {
@@ -98,8 +157,6 @@ class AbsentController extends Controller
                       ->orWhereNull('description');
             })
             ->first();
-
-        $user = $this->userRepository->getByAuth();
 
         // Cek apakah user sedang meeting keluar kota yang belum selesai atau dibatalkan
         $meetingOutOfTown = \App\Models\Meet::whereHas('participants', function($query) {

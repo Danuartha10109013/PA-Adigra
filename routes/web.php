@@ -274,6 +274,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/create', [MeetController::class, 'store']);
             Route::post('/{meet}/notulensi', [MeetController::class, 'addNotulensi'])->name('meet.notulensi');
             Route::post('/{meet}/complete', [MeetController::class, 'complete'])->name('meet.complete');
+            Route::post('/{meet}/accept', [MeetController::class, 'accept'])->name('meet.accept');
+            Route::post('/{meet}/reject', [MeetController::class, 'reject'])->name('meet.reject');
 
             // grup meet_id
             Route::group(['prefix' => '{meet_id}'], function () {

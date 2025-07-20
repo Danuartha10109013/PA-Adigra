@@ -11,87 +11,24 @@ class AttendanceSummaryController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil semua data AttendanceSummary yang difilter, termasuk data meeting keluar kota yang mungkin sudah ada di DB
-        $summariesFromDb = AttendanceSummary::with('user')
-            ->when($request->filled('start_date'), function ($q) use ($request) {
-                return $q->whereDate('date', '>=', $request->start_date);
-            })
-            ->when($request->filled('end_date'), function ($q) use ($request) {
-                return $q->whereDate('date', '<=', $request->end_date);
-            })
-            ->when($request->filled('user_id'), function ($q) use ($request) {
-                return $q->where('user_id', $request->user_id);
+        $absents = \App\Models\Absent::with('user')
+            ->when($request->filled('start_date'), fn($q) => $q->whereDate('date', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn($q) => $q->whereDate('date', '<=', $request->end_date))
+            ->when($request->filled('user_id'), fn($q) => $q->where('user_id', $request->user_id))
+            ->when($request->filled('jenis_absen'), function($q) use ($request) {
+                if ($request->jenis_absen === 'wfh') {
+                    $q->whereRaw('LOWER(status) = ?', ['wfh']);
+                } elseif ($request->jenis_absen === 'wfo') {
+                    $q->where(function($q) {
+                        $q->whereRaw('LOWER(status) = ?', ['absen'])
+                          ->orWhereRaw('LOWER(status) = ?', ['wfo']);
+                    });
+                }
             })
             ->orderBy('date', 'desc')
             ->get();
-
         $users = User::all();
-
-        // Ambil data meeting keluar kota yang difilter (untuk memastikan semua meeting terkait terambil)
-        $meetings = \App\Models\Meet::with(['participants'])
-            ->where('category', 'out_of_town')
-            ->where('status', '!=', 'cancelled')
-            ->when($request->filled('start_date'), function ($q) use ($request) {
-                return $q->whereDate('date', '>=', $request->start_date);
-            })
-            ->when($request->filled('end_date'), function ($q) use ($request) {
-                return $q->whereDate('date', '<=', $request->end_date);
-            })
-            ->when($request->filled('user_id'), function ($q) use ($request) {
-                return $q->whereHas('participants', function($query) use ($request) {
-                    $query->where('user_id', $request->user_id);
-                });
-            })
-            ->get();
-
-        // Proses dan gabungkan data: prioritas Meeting Keluar Kota
-        $finalSummaries = collect();
-
-        // Tambahkan semua data dari database (termasuk meeting yang sudah ada) ke koleksi final
-        foreach ($summariesFromDb as $summary) {
-             // Pastikan date adalah objek Carbon sebelum diformat
-             $date = \Carbon\Carbon::parse($summary->date);
-             $key = $summary->user_id . '_ மட்டு்ர _' . $date->format('Y-m-d');
-             $finalSummaries->put($key, $summary);
-        }
-
-        // Timpa atau tambahkan data meeting keluar kota ke koleksi final
-        foreach ($meetings as $meeting) {
-            foreach ($meeting->participants as $participant) {
-                // Pastikan date adalah objek Carbon sebelum diformat
-                $date = \Carbon\Carbon::parse($meeting->date);
-                $key = $participant->id . '_ மட்டு்ர _' . $date->format('Y-m-d');
-                
-                // Buat objek AttendanceSummary sementara untuk meeting
-                $meetingSummary = new AttendanceSummary([
-                    'user_id' => $participant->id,
-                    'date' => $meeting->date,
-                    'is_leave' => true,
-                    'leave_type' => 'Meeting Keluar Kota',
-                    'notes' => (\App\Models\AttendanceSummary::where('user_id', $participant->id)->whereDate('date', $meeting->date)->where('leave_type', 'Meeting Keluar Kota')->exists() ? \App\Models\AttendanceSummary::where('user_id', $participant->id)->whereDate('date', $meeting->date)->where('leave_type', 'Meeting Keluar Kota')->first()->notes . '; ' : '') .'Meeting keluar kota: ' . $meeting->title,
-                    'status' => $meeting->status,
-                    'check_in' => null, 
-                    'check_out' => null,
-                    'is_late' => false,
-                    'is_early_leave' => false,
-                    'is_absent' => false,
-                ]);
-
-                // Pastikan date adalah objek Carbon
-                $meetingSummary->date = \Carbon\Carbon::parse($meetingSummary->date);
-
-                $meetingSummary->user = $participant; // Assign user relationship for view
-                
-                // Timpa entri yang ada di koleksi final dengan data meeting
-                // Ini akan memastikan data meeting menimpa data absensi reguler jika ada
-                $finalSummaries->put($key, $meetingSummary);
-            }
-        }
-
-        // Konversi kembali ke daftar dan urutkan
-        $summaries = $finalSummaries->values()->sortByDesc('date');
-
-        return view('backoffice.attendance.summary.index', compact('summaries', 'users'));
+        return view('backoffice.attendance.summary.index', compact('absents', 'users'));
     }
 
     public function create()
@@ -192,9 +129,45 @@ class AttendanceSummaryController extends Controller
             ->when($request->filled('user_id'), function ($q) use ($request) {
                 return $q->where('user_id', $request->user_id);
             });
-
         $summaries = $query->get();
         $users = User::all();
+
+        // Ambil data absents untuk status dan bukti_foto
+        $absentsQuery = \App\Models\Absent::query()
+            ->select(['user_id','date','status','bukti_foto'])
+            ->when($request->filled('start_date'), function ($q) use ($request) {
+                return $q->whereDate('date', '>=', $request->start_date);
+            })
+            ->when($request->filled('end_date'), function ($q) use ($request) {
+                return $q->whereDate('date', '<=', $request->end_date);
+            })
+            ->when($request->filled('user_id'), function ($q) use ($request) {
+                return $q->where('user_id', $request->user_id);
+            });
+        if ($request->jenis_absen === 'wfh') {
+            $absentsQuery->whereRaw('LOWER(status) = ?', ['wfh']);
+        } elseif ($request->jenis_absen === 'wfo') {
+            $absentsQuery->where(function($q) {
+                $q->whereRaw('LOWER(status) = ?', ['absen'])
+                  ->orWhereRaw('LOWER(status) = ?', ['wfo']);
+            });
+        }
+        $absents = $absentsQuery->get();
+        $absentsMap = $absents->keyBy(function($item) {
+            return $item->user_id.'_'.$item->date;
+        });
+
+        // Gabungkan status dan bukti_foto ke summaries
+        foreach ($summaries as $summary) {
+            $key = $summary->user_id.'_'.$summary->date->format('Y-m-d');
+            if (isset($absentsMap[$key])) {
+                $summary->status = $absentsMap[$key]->status;
+                $summary->bukti_foto = $absentsMap[$key]->bukti_foto;
+            } else {
+                $summary->status = null;
+                $summary->bukti_foto = null;
+            }
+        }
 
         // Tambahkan data meeting keluar kota
         $meetings = \App\Models\Meet::with(['participants'])
@@ -212,8 +185,6 @@ class AttendanceSummaryController extends Controller
                 });
             })
             ->get();
-
-        // Gabungkan data meeting ke summaries
         foreach ($meetings as $meeting) {
             foreach ($meeting->participants as $participant) {
                 $summary = new AttendanceSummary([
@@ -222,14 +193,30 @@ class AttendanceSummaryController extends Controller
                     'is_leave' => true,
                     'leave_type' => 'Meeting Keluar Kota',
                     'notes' => 'Meeting keluar kota: ' . $meeting->title,
-                    'status' => 'approved'
+                    'status' => $meeting->status,
+                    'bukti_foto' => null
                 ]);
                 $summary->user = $participant;
                 $summaries->push($summary);
             }
         }
 
-        $report = $summaries->groupBy('user_id')->map(function ($items) {
+        $absentsAll = \App\Models\Absent::query()
+            ->when($request->filled('start_date'), function ($q) use ($request) {
+                return $q->whereDate('date', '>=', $request->start_date);
+            })
+            ->when($request->filled('end_date'), function ($q) use ($request) {
+                return $q->whereDate('date', '<=', $request->end_date);
+            })
+            ->when($request->filled('user_id'), function ($q) use ($request) {
+                return $q->where('user_id', $request->user_id);
+            })
+            ->get();
+
+        $report = $summaries->groupBy('user_id')->map(function ($items, $user_id) use ($absentsAll) {
+            $userAbsents = $absentsAll->where('user_id', $user_id);
+            $total_wfh = $userAbsents->where(function($a){ return strtolower($a->status) == 'wfh'; })->count();
+            $total_wfo = $userAbsents->where(function($a){ return strtolower($a->status) == 'absen' || strtolower($a->status) == 'wfo'; })->count();
             return [
                 'user' => $items->first()->user,
                 'total_days' => $items->count(),
@@ -238,6 +225,8 @@ class AttendanceSummaryController extends Controller
                 'total_absent' => $items->where('is_absent', true)->count(),
                 'total_leave' => $items->where('is_leave', true)->count(),
                 'total_meeting' => $items->where('leave_type', 'Meeting Keluar Kota')->count(),
+                'total_wfh' => $total_wfh,
+                'total_wfo' => $total_wfo
             ];
         });
 

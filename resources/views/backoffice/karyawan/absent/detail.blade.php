@@ -79,7 +79,12 @@
 
                             <div class="card card-outline card-primary bg-light">
                                 <div class="card-body">
-
+                                    @if (strtolower($absent->status) == 'wfh' && $absent->bukti_foto)
+                                        <div class="mb-3 text-center">
+                                            <label><strong>Bukti Foto WFH:</strong></label><br>
+                                            <img src="{{ asset('storage/' . $absent->bukti_foto) }}" alt="Bukti Foto WFH" style="max-width: 300px; border-radius: 8px; border: 1px solid #ccc;">
+                                        </div>
+                                    @endif
                                     <p>Hari: <b>{{  \Carbon\Carbon::parse($absent->date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</b></p>
                                     <p>Nama Kantor: <b>{{ $absent->office ? $absent->office->name : 'Tidak ada data kantor' }}</b></p>
                                     <p>Alamat Kantor: <b>{{ $absent->office ? $absent->office->address : 'Tidak ada data alamat' }}</b></p>

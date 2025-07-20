@@ -41,7 +41,15 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Jenis Absen</label>
+                    <select class="form-select" name="jenis_absen">
+                        <option value="">Semua</option>
+                        <option value="wfo" {{ request('jenis_absen') == 'wfo' ? 'selected' : '' }}>WFO</option>
+                        <option value="wfh" {{ request('jenis_absen') == 'wfh' ? 'selected' : '' }}>WFH</option>
+                    </select>
+                </div>
+                <div class="col-md-12 d-flex align-items-end justify-content-end">
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="fas fa-search"></i> Filter
                     </button>
@@ -67,45 +75,54 @@
                             <th>Pulang</th>
                             <th>Status</th>
                             <th>Keterangan</th>
+                            <th>Bukti Foto</th>
                             <!-- <th>Aksi</th> -->
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($summaries as $summary)
+                        @forelse($absents as $absent)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $summary->user->name }}</td>
-                                <td>{{ \Carbon\Carbon::parse($summary->date)->format('d/m/Y') }}</td>
-                                <td>{{ $summary->check_in ? $summary->check_in->format('H:i') : '-' }}</td>
-                                <td>{{ $summary->check_out ? $summary->check_out->format('H:i') : '-' }}</td>
+                                <td>{{ $absent->user ? $absent->user->name : '-' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($absent->date)->format('d/m/Y') }}</td>
+                                <td>{{ $absent->start ? \Carbon\Carbon::parse($absent->start)->format('H:i') : '-' }}</td>
+                                <td>{{ $absent->end ? \Carbon\Carbon::parse($absent->end)->format('H:i') : '-' }}</td>
                                 <td>
-                                    @if($summary->is_late)
-                                        <span class="badge bg-warning">Terlambat</span>
-                                    @elseif($summary->is_early_leave)
-                                        <span class="badge bg-info">Pulang Awal</span>
-                                    @elseif($summary->is_absent)
-                                        <span class="badge bg-danger">Tidak Masuk</span>
-                                    @elseif($summary->is_leave)
-                                        <span class="badge bg-success">Cuti</span>
+                                    @if(strtolower($absent->status) == 'wfh')
+                                        <span class="badge bg-secondary">WFH</span>
+                                    @elseif(strtolower($absent->status) == 'absen' || strtolower($absent->status) == 'wfo')
+                                        <span class="badge bg-primary">WFO</span>
                                     @else
-                                        <span class="badge bg-primary">Hadir</span>
+                                        <span class="badge bg-info">{{ ucfirst($absent->status) }}</span>
                                     @endif
                                 </td>
-                                <td>{{ $summary->notes ?? '-' }}</td>
-                                <!-- <td>
-                                    <div class="btn-group">
-                                        <a href="{{ url('backoffice/attendance/summary/edit/'.$summary->id) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url('backoffice/attendance/summary/delete/'.$summary->id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </div>
-                                </td> -->
+                                <td>{{ $absent->description ?? '-' }}</td>
+                                <td>
+                                    @if($absent->bukti_foto && strtolower($absent->status) == 'wfh')
+                                        <img src="{{ asset('storage/'.$absent->bukti_foto) }}" alt="Bukti WFH" style="max-width:60px; max-height:60px; border-radius:6px; border:1px solid #ccc; cursor:pointer;" onclick="showPreviewModalCustom('{{ asset('storage/'.$absent->bukti_foto) }}')">
+                                        <script>
+                                            function showPreviewModalCustom(imgUrl) {
+                                                document.getElementById('customPreviewImage').src = imgUrl;
+                                                document.getElementById('customPreviewModal').style.display = 'flex';
+                                            }
+                                            function closePreviewModalCustom() {
+                                                document.getElementById('customPreviewModal').style.display = 'none';
+                                            }
+                                            var customModal = document.getElementById('customPreviewModal');
+                                            if (customModal) {
+                                                customModal.addEventListener('click', function(e) {
+                                                    if (e.target === this) closePreviewModalCustom();
+                                                });
+                                            }
+                                            </script>
+                                        @else
+                                        -
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center">Tidak ada data</td>
+                                <td colspan="9" class="text-center">Tidak ada data</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -117,6 +134,13 @@
                 {{ $summaries->links() }}
             </div> --}}
         </div>
+    </div>
+</div>
+<!-- Custom Modal Preview Bukti Foto -->
+<div id="customPreviewModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="position:relative; background:transparent; display:flex; align-items:center; justify-content:center; width:100vw; height:100vh;">
+        <img id="customPreviewImage" src="" alt="Preview Bukti WFH" style="max-width:98vw; max-height:95vh; border-radius:12px; border:4px solid #fff; box-shadow:0 0 30px #000; padding:12px; background:#fff;">
+        <button onclick="closePreviewModalCustom()" style="position:absolute; top:30px; right:40px; background:#fff; border:none; border-radius:50%; width:48px; height:48px; font-size:2em; font-weight:bold; color:#333; cursor:pointer; box-shadow:0 2px 12px #0003;">&times;</button>
     </div>
 </div>
 @endsection
@@ -138,4 +162,5 @@
         });
     });
 </script>
+
 @endpush 

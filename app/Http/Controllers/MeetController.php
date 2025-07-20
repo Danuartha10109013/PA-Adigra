@@ -25,14 +25,15 @@ class MeetController extends Controller
     foreach ($meetings as $meet) {
         $start = \Carbon\Carbon::parse($meet->date . ' ' . $meet->start);
         $end = \Carbon\Carbon::parse($meet->date . ' ' . $meet->end);
-
-        if ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) {
-            $meet->status = 'onboarding';
-            $meet->save();
-        } elseif ($now->greaterThan($end)) {
-            $meet->status = 'completed';
-            $meet->save();
-        }
+            if($meet->acc == 1){
+                if ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) {
+                    $meet->status = 'onboarding';
+                    $meet->save();
+                } elseif ($now->greaterThan($end)) {
+                    $meet->status = 'completed';
+                    $meet->save();
+                }
+            }
     }
 
     return response()->json(['message' => 'Status updated']);
@@ -113,13 +114,18 @@ class MeetController extends Controller
                     ->withInput();
             }
         }
-
+        if(Auth::user()->role_id == 2){
+            $acc = 0;
+        }else{
+            $acc = 1;
+        }
         $meet = Meet::create([
             'title' => $request->title,
             'date' => $request->date,
             'start' => $request->start,
             'end' => $request->end,
             'category' => $request->category,
+            'acc' => $acc,
             'created_by' => Auth::id()
         ]);
 
@@ -210,6 +216,7 @@ class MeetController extends Controller
             'start' => $request->start,
             'end' => $request->end,
             'category' => $request->category,
+            'acc' => 0,
         ]);
 
         // Update peserta meeting jika kategori adalah out_of_town
@@ -352,5 +359,23 @@ class MeetController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Notulensi berhasil ditambahkan');
+    }
+
+    public function accept(Meet $meet)
+    {
+        $meet->update([
+            'acc' => 1
+        ]);
+
+        return redirect()->back()->with('success', 'Meeting berhasil diterima');
+    }
+
+    public function reject(Meet $meet)
+    {
+        $meet->update([
+            'acc' => 2
+        ]);
+
+        return redirect()->back()->with('success', 'Meeting berhasil ditolak');
     }
 }

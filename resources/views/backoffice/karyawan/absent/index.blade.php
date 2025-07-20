@@ -57,8 +57,27 @@
                     <div class="row">
                         
                         <div class="col-md-4 mb-3">
-                            <form action="/backoffice/absent/store" method="POST">
+                            <form action="/backoffice/absent/store" method="POST" enctype="multipart/form-data">
                                 @csrf
+                                <div class="form-group">
+                                    <label for="jenis_absen"><strong>Jenis Absen</strong></label>
+                                    <select class="form-control" id="jenis_absen" name="jenis_absen">
+                                        <option value="WFO" selected>WFO (Work From Office)</option>
+                                        <option value="WFH">WFH (Work From Home)</option>
+                                    </select>
+                                </div>
+                                <div id="wfh_photo_group" class="form-group" style="display: none;">
+                                    <label><strong>Foto Selfie (WFH)</strong></label>
+                                    <div id="camera-container" style="text-align:center;">
+                                        <video id="video" width="240" height="180" autoplay style="border-radius:8px; border:1px solid #ccc;"></video>
+                                        <canvas id="canvas" width="240" height="180" style="display:none;"></canvas>
+                                        <div id="countdown" style="font-size:2em; font-weight:bold; margin:10px 0; display:none;"></div>
+                                        <button type="button" id="capture-btn" class="btn btn-primary btn-sm mt-2">Capture</button>
+                                        <button type="button" id="retake-btn" class="btn btn-warning btn-sm mt-2" style="display:none;">Ulangi</button>
+                                    </div>
+                                    <input type="hidden" id="bukti_foto" name="bukti_foto">
+                                    <small class="form-text text-muted">Ambil foto selfie saat WFH.</small>
+                                </div>
                                 <div class="card card-outline card-primary bg-light">
                                     <div class="card-body">
 
@@ -329,6 +348,99 @@
             }).addTo(map).bindPopup('Radius Kantor');
             // end circle
         
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const jenisAbsen = document.getElementById('jenis_absen');
+            const wfhPhotoGroup = document.getElementById('wfh_photo_group');
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const captureBtn = document.getElementById('capture-btn');
+            const retakeBtn = document.getElementById('retake-btn');
+            const countdown = document.getElementById('countdown');
+            const buktiFotoInput = document.getElementById('bukti_foto');
+            let stream = null;
+
+            function showCamera() {
+                wfhPhotoGroup.style.display = 'block';
+                canvas.style.display = 'none';
+                video.style.display = 'block';
+                captureBtn.style.display = 'inline-block';
+                retakeBtn.style.display = 'none';
+                countdown.style.display = 'none';
+                buktiFotoInput.value = '';
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(function(s) {
+                            stream = s;
+                            video.srcObject = stream;
+                            video.play();
+                        })
+                        .catch(function(err) {
+                            alert('Tidak dapat mengakses kamera: ' + err.message);
+                        });
+                } else {
+                    alert('Browser tidak mendukung kamera.');
+                }
+            }
+            function hideCamera() {
+                wfhPhotoGroup.style.display = 'none';
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+            }
+            jenisAbsen.addEventListener('change', function() {
+                if (this.value === 'WFH') {
+                    showCamera();
+                } else {
+                    hideCamera();
+                }
+            });
+            if (jenisAbsen.value === 'WFH') {
+                showCamera();
+            } else {
+                hideCamera();
+            }
+            captureBtn.addEventListener('click', function() {
+                countdown.style.display = 'block';
+                let count = 3;
+                countdown.textContent = count;
+                captureBtn.disabled = true;
+                const interval = setInterval(function() {
+                    count--;
+                    if (count > 0) {
+                        countdown.textContent = count;
+                    } else {
+                        clearInterval(interval);
+                        countdown.style.display = 'none';
+                        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                        canvas.style.display = 'block';
+                        video.style.display = 'none';
+                        captureBtn.style.display = 'none';
+                        retakeBtn.style.display = 'inline-block';
+                        // Simpan hasil capture ke input hidden
+                        buktiFotoInput.value = canvas.toDataURL('image/png');
+                        captureBtn.disabled = false;
+                    }
+                }, 1000);
+            });
+            retakeBtn.addEventListener('click', function() {
+                canvas.style.display = 'none';
+                video.style.display = 'block';
+                captureBtn.style.display = 'inline-block';
+                retakeBtn.style.display = 'none';
+                buktiFotoInput.value = '';
+            });
+            // Validasi sebelum submit (WFH harus ada foto)
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (jenisAbsen.value === 'WFH' && !buktiFotoInput.value) {
+                    e.preventDefault();
+                    alert('Silakan ambil foto selfie terlebih dahulu!');
+                }
+            });
+        });
     </script>
 
 </section>

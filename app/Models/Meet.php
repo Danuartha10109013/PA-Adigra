@@ -15,7 +15,8 @@ class Meet extends Model
         'notulensi',
         'status',
         'created_by',
-        'status'
+        'status',
+        'acc'
     ];
 
     public function creator()

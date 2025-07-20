@@ -63,14 +63,12 @@
                                     <div class="card-body">
                                         <input type="hidden" id="latitude" name="latitude" class="form-control">
                                         <input type="hidden" id="longitude" name="longitude" class="form-control">
-
                                         <div class="form-group">
                                             <label><strong>Jam Kerja Minimal:</strong></label>
                                             <div class="alert alert-info">
                                                 <i class="fas fa-clock"></i> {{ auth()->user()->minimum_work_hours }} jam per hari
                                             </div>
                                         </div>
-
                                         @if ($absentToday)
                                             @if ($absentToday->status == 'Absen')
                                                 @if ($absentToday->start && !$absentToday->end)
@@ -326,6 +324,12 @@
                 radius: {{ auth()->user()->office->radius * 2 }}
             }).addTo(map).bindPopup('Radius Kantor');
             // end circle
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Removed WFH photo input logic
+        });
     </script>
 
     
