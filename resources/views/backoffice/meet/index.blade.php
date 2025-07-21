@@ -86,7 +86,18 @@
                                 @elseif($meet->category == 'online')
                                     <span class="badge badge-primary">Meeting Online</span>
                                 @else
-                                    <span class="badge badge-warning">Meeting Keluar Kota</span>
+                                    <span class="badge badge-warning">Meeting Keluar Kota</span> <br>
+                                    @if(isset($meet->sik) && $meet->sik)
+                                        @php
+                                            $ext = strtolower(pathinfo($meet->sik, PATHINFO_EXTENSION));
+                                            $url = asset('storage/surat_izin/' . $meet->sik);
+                                        @endphp
+                                        @if($ext === 'pdf')
+                                            <a href="{{ $url }}" target="_blank" class="btn btn-sm btn-info ml-2">Preview Surat Izin (PDF)</a>
+                                        @elseif(in_array($ext, ['jpg','jpeg','png','gif','bmp','webp']))
+                                            <button type="button" class="btn btn-sm btn-info ml-2" onclick="showSuratIzinPreview('{{ $url }}')">Preview Surat Izin (Gambar)</button>
+                                        @endif
+                                    @endif
                                 @endif
                             </td>
                             <td class="status">
@@ -266,3 +277,26 @@
     });
 </script>
 @endpush
+
+<!-- Modal Preview Surat Izin Gambar -->
+<div id="suratIzinPreviewModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="position:relative; background:transparent; display:flex; align-items:center; justify-content:center; width:100vw; height:100vh;">
+        <img id="suratIzinPreviewImage" src="" alt="Preview Surat Izin" style="max-width:98vw; max-height:95vh; border-radius:12px; border:4px solid #fff; box-shadow:0 0 30px #000; padding:12px; background:#fff;">
+        <button onclick="closeSuratIzinPreviewModal()" style="position:absolute; top:30px; right:40px; background:#fff; border:none; border-radius:50%; width:48px; height:48px; font-size:2em; font-weight:bold; color:#333; cursor:pointer; box-shadow:0 2px 12px #0003;">&times;</button>
+    </div>
+</div>
+<script>
+function showSuratIzinPreview(imgUrl) {
+    document.getElementById('suratIzinPreviewImage').src = imgUrl;
+    document.getElementById('suratIzinPreviewModal').style.display = 'flex';
+}
+function closeSuratIzinPreviewModal() {
+    document.getElementById('suratIzinPreviewModal').style.display = 'none';
+}
+var suratIzinModal = document.getElementById('suratIzinPreviewModal');
+if (suratIzinModal) {
+    suratIzinModal.addEventListener('click', function(e) {
+        if (e.target === this) closeSuratIzinPreviewModal();
+    });
+}
+</script>

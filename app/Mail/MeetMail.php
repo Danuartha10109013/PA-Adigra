@@ -18,10 +18,12 @@ class MeetMail extends Mailable
      */
 
     public $meet;
+    public $sender;
 
-    public function __construct($meet)
+    public function __construct($meet, $sender = null)
     {
         $this->meet = $meet;
+        $this->sender = $sender;
     }
 
     /**

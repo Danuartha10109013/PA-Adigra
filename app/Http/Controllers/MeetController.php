@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Jobs\SendMeetEmailJob;
 use App\Mail\DeleteMeetMail;
 use App\Mail\EditMeetMail;
+use App\Mail\MeetConfirmationMail;
 use App\Mail\MeetMail;
+use App\Mail\MeetRejectionMail;
 use App\Models\Meet;
 use App\Models\User;
 use App\Models\Absent;
@@ -13,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MeetController extends Controller
 {
@@ -119,6 +122,12 @@ class MeetController extends Controller
         }else{
             $acc = 1;
         }
+        $sikFileName = null;
+        if ($request->category === 'out_of_town' && $request->hasFile('surat_izin')) {
+            $file = $request->file('surat_izin');
+            $sikFileName = 'sik_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('surat_izin', $sikFileName ,'public');
+        }
         $meet = Meet::create([
             'title' => $request->title,
             'date' => $request->date,
@@ -126,8 +135,31 @@ class MeetController extends Controller
             'end' => $request->end,
             'category' => $request->category,
             'acc' => $acc,
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
+            'sik' => $sikFileName
         ]);
+
+        // Jika user role_id==2, kirim email ke semua admin (role_id==1)
+        if (Auth::user()->role_id == 2) {
+            $admins = User::where('role_id', 1)->get();
+            foreach ($admins as $admin) {
+                try {
+                    Mail::to($admin->email)->send(new MeetMail($meet, Auth::user()));
+                    Log::info('Email pengajuan meeting berhasil dikirim ke admin', [
+                        'to' => $admin->email,
+                        'meet_id' => $meet->id,
+                        'sender_id' => Auth::id()
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Gagal mengirim email pengajuan meeting ke admin', [
+                        'to' => $admin->email,
+                        'meet_id' => $meet->id,
+                        'sender_id' => Auth::id(),
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
 
         if ($request->category === 'out_of_town' && $request->has('participants')) {
             $meet->participants()->attach($request->participants);
@@ -367,6 +399,19 @@ class MeetController extends Controller
             'acc' => 1
         ]);
 
+        // Kirim email konfirmasi
+        $sender = $meet->creator ?? null;
+        if ($meet->category === 'internal' || $meet->category === 'online') {
+            $users = \App\Models\User::where('role_id', 2)->get();
+            foreach ($users as $user) {
+                Mail::to($user->email)->send(new MeetConfirmationMail($meet, $sender));
+            }
+        } elseif ($meet->category === 'out_of_town') {
+            foreach ($meet->participants as $participant) {
+                Mail::to($participant->email)->send(new MeetConfirmationMail($meet, $sender));
+            }
+        }
+
         return redirect()->back()->with('success', 'Meeting berhasil diterima');
     }
 
@@ -375,6 +420,15 @@ class MeetController extends Controller
         $meet->update([
             'acc' => 2
         ]);
+
+        // Kirim email penolakan ke pembuat meeting
+        if ($meet->created_by) {
+            $creator = User::find($meet->created_by);
+            $admin = Auth::user();
+            if ($creator) {
+                Mail::to($creator->email)->send(new MeetRejectionMail($meet, $admin));
+            }
+        }
 
         return redirect()->back()->with('success', 'Meeting berhasil ditolak');
     }

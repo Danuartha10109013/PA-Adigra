@@ -16,7 +16,8 @@ class Meet extends Model
         'status',
         'created_by',
         'status',
-        'acc'
+        'acc',
+        'sik'
     ];
 
     public function creator()

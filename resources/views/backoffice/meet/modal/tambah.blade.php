@@ -94,6 +94,12 @@
                                 </small>
                             </div>
 
+                            <div class="form-group" id="suratIzinSection" style="display: none;">
+                                <label>Surat Izin Keluar Kota <span class="text-danger">*</span></label>
+                                <input type="file" name="surat_izin" id="suratIzinInput" class="form-control" accept="application/pdf,image/*">
+                                <small class="form-text text-muted">Upload surat izin keluar kota (PDF/JPG/PNG).</small>
+                            </div>
+
                             <div class="d-flex justify-content-center">
                                 <div class="form-group mx-4">
                                     <label>Tanggal <span class="text-danger">*</span></label>
@@ -161,8 +167,12 @@
 
     function toggleParticipants(category) {
         const participantsSection = document.getElementById('participantsSection');
+        const suratIzinSection = document.getElementById('suratIzinSection');
+        const suratIzinInput = document.getElementById('suratIzinInput');
         if (category === 'out_of_town') {
             participantsSection.style.display = 'block';
+            suratIzinSection.style.display = 'block';
+            suratIzinInput.required = true;
             // Reinitialize select2 when shown
             $('#participantsSelect').select2({
                 width: '100%',
@@ -183,6 +193,8 @@
             updateSelectedParticipants();
         } else {
             participantsSection.style.display = 'none';
+            suratIzinSection.style.display = 'none';
+            suratIzinInput.required = false;
             // Reset pilihan peserta
             $('#participantsSelect').val(null).trigger('change');
             $('#selectedParticipants').hide();
