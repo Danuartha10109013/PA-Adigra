@@ -6,6 +6,14 @@ use App\Http\Repository\SubmissionRepository;
 use Illuminate\Http\Request;
 use App\Models\LeaveQuota;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\LeaveSubmissionMail;
+use App\Mail\SickLeaveSubmissionMail;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LeaveApprovalMail;
+use App\Mail\LeaveRejectionMail;
+use App\Mail\SickLeaveApprovalMail;
+use App\Mail\SickLeaveRejectionMail;
 
 class SubmissionController extends Controller
 {
@@ -64,6 +72,13 @@ class SubmissionController extends Controller
         }
 
         $submission = $this->submissionRepository->storeCuti($request);
+        // Kirim email ke admin jika pengaju adalah karyawan
+        if (Auth::user()->role_id == 2) {
+            $admins = User::where('role_id', 1)->get();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new LeaveSubmissionMail($submission, Auth::user()));
+            }
+        }
         return redirect('/backoffice/submission/cuti')->with('success', 'Cuti telah ditambahkan');
     }
 
@@ -82,12 +97,22 @@ class SubmissionController extends Controller
     public function confirmCuti($id)
     {
         $submission = $this->submissionRepository->confirm($id);
+        // Kirim email persetujuan ke pengaju
+        $user = \App\Models\User::find($submission->user_id);
+        if ($user) {
+            Mail::to($user->email)->send(new LeaveApprovalMail($submission, Auth::user()));
+        }
         return redirect('/backoffice/submission/cuti')->with('success', 'Cuti telah disetujui');
     }
 
     public function rejectCuti(Request $request, $id)
     {
         $submission = $this->submissionRepository->reject($request, $id);
+        // Kirim email penolakan ke pengaju
+        $user = \App\Models\User::find($submission->user_id);
+        if ($user) {
+            Mail::to($user->email)->send(new LeaveRejectionMail($submission, Auth::user()));
+        }
         return redirect('/backoffice/submission/cuti')->with('success', 'Cuti telah ditolak');
     }
 
@@ -126,6 +151,13 @@ class SubmissionController extends Controller
     public function storeIzinSakit(Request $request)
     {
         $submission = $this->submissionRepository->storeNonTypeCuti($request);
+        // Kirim email ke admin jika pengaju adalah karyawan
+        if (Auth::user()->role_id == 2) {
+            $admins = User::where('role_id', 1)->get();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new SickLeaveSubmissionMail($submission, Auth::user()));
+            }
+        }
         return redirect('/backoffice/submission/izin-sakit')->with('success', 'Pengajuan telah ditambahkan');
     }
 
@@ -145,12 +177,22 @@ class SubmissionController extends Controller
     public function confirmIzinSakit($id)
     {
         $submission = $this->submissionRepository->confirm($id);
+        // Kirim email persetujuan ke pengaju
+        $user = \App\Models\User::find($submission->user_id);
+        if ($user) {
+            Mail::to($user->email)->send(new SickLeaveApprovalMail($submission, Auth::user()));
+        }
         return redirect('/backoffice/submission/izin-sakit')->with('success', 'Pengajuan telah disetujui');
     }
 
     public function rejectIzinSakit(Request $request, $id)
     {
         $submission = $this->submissionRepository->reject($request, $id);
+        // Kirim email penolakan ke pengaju
+        $user = \App\Models\User::find($submission->user_id);
+        if ($user) {
+            Mail::to($user->email)->send(new SickLeaveRejectionMail($submission, Auth::user()));
+        }
         return redirect('/backoffice/submission/izin-sakit')->with('success', 'Pengajuan telah ditolak');
     }
 
