@@ -51,9 +51,14 @@ class SubmissionRepository
             $submission->end_date = $data['end_date'];
             $start = new \DateTime($submission->start_date);
             $end = new \DateTime($submission->end_date);
-            $interval = $start->diff($end);
-            $days = $interval->format('%a');
-            $total_hari = $days + 1;
+            $total_hari = 0;
+            $period = new \DatePeriod($start, new \DateInterval('P1D'), $end->modify('+1 day'));
+            foreach ($period as $dt) {
+                // 6 = Saturday, 0 = Sunday
+                if ($dt->format('w') != 6 && $dt->format('w') != 0) {
+                    $total_hari++;
+                }
+            }
             $submission->total_day = $total_hari;
             $submission->type = "cuti";
             $submission->description = $data['description'];
@@ -167,12 +172,16 @@ class SubmissionRepository
             $submission->start_date = $data['start_date'];
             $submission->end_date = $data['end_date'];
     
-            // Calculate the number of days for the leave
+            // Calculate the number of days for the leave, excluding weekends
             $start = new \DateTime($submission->start_date);
             $end = new \DateTime($submission->end_date);
-            $interval = $start->diff($end);
-            $days = $interval->format('%a');
-            $total_hari = $days + 1;
+            $total_hari = 0;
+            $period = new \DatePeriod($start, new \DateInterval('P1D'), $end->modify('+1 day'));
+            foreach ($period as $dt) {
+                if ($dt->format('w') != 6 && $dt->format('w') != 0) {
+                    $total_hari++;
+                }
+            }
             $submission->total_day = $total_hari;
     
             // Set other properties
